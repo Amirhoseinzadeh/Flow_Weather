@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/cw_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -131,15 +132,17 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                               ),
                                               IconButton(
                                                   onPressed: () {
-                                                    BlocProvider.of<
-                                                                BookmarkBloc>(
-                                                            context)
-                                                        .add(DeleteCityEvent(
-                                                            city.name));
-                                                    BlocProvider.of<
-                                                                BookmarkBloc>(
-                                                            context)
-                                                        .add(GetAllCityEvent());
+                                                    // ۱) حذف از دیتابیس
+                                                    context.read<BookmarkBloc>().add(DeleteCityEvent(city.name));
+                                                    // ۲) رفرش لیست بوکمارک‌ها
+                                                    context.read<BookmarkBloc>().add(GetAllCityEvent());
+
+                                                    // ۳) اگر HomeScreen داره همین شهر رو نشون می‌ده، وضعیت بوکمارکش رو هم رفرش کن
+                                                    final homeState = context.read<HomeBloc>().state.cwStatus;
+                                                    if (homeState is CwCompleted &&
+                                                        homeState.currentCityEntity.name == city.name) {
+                                                      context.read<BookmarkBloc>().add(GetCityByNameEvent(city.name));
+                                                    }
                                                   },
                                                   icon: Icon(
                                                     Icons.delete,

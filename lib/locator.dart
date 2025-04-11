@@ -13,33 +13,60 @@ import 'package:flow_weather/features/weather_feature/data/repository/weather_re
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_current_weather_usecase.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_forecast_weather_usecase.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/get_suggestion_city_usecase.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 GetIt locator = GetIt.instance;
 
-setup() async{
+Future<void> setup() async {
+  // ۱) ApiProvider
   locator.registerSingleton<ApiProvider>(ApiProvider());
 
+  // ۲) Database
   final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
   locator.registerSingleton<AppDatabase>(database);
 
-  // inject Repositories
-  locator.registerSingleton<WeatherRepository>(WeatherRepositoryImpl(locator()));
-  locator.registerSingleton<CityRepository>(CityRepositoryImpl(database.cityDao));
-  //
-  // // inject UseCases
-  locator.registerSingleton<GetCurrentWeatherUseCase>(GetCurrentWeatherUseCase(locator()));
-  locator.registerSingleton<GetForecastWeatherUseCase>(GetForecastWeatherUseCase(locator()));
-  locator.registerSingleton<SaveCityUseCase>(SaveCityUseCase(locator()));
-  locator.registerSingleton<GetAllCityUseCase>(GetAllCityUseCase(locator()));
-  locator.registerSingleton<GetCityUseCase>(GetCityUseCase(locator()));
-  locator.registerSingleton<DeleteCityUseCase>(DeleteCityUseCase(locator()));
-  locator.registerSingleton<BookmarkBloc>(BookmarkBloc(locator(),locator(),locator(),locator()));
-  locator.registerSingleton<HomeBloc>(HomeBloc(locator(),locator()));
-  locator.registerSingleton<BottomIconCubit>(BottomIconCubit());
-  locator.registerLazySingleton<Dio>(() => Dio());
+  // ۳) Repositories
+  locator.registerSingleton<WeatherRepository>(
+    WeatherRepositoryImpl(locator()),
+  );
+  locator.registerSingleton<CityRepository>(
+    CityRepositoryImpl(database.cityDao),
+  );
 
-// Alternatively you could write it if you don't like global variables
-//   GetIt.I.registerSingleton<AppModel>(AppModel());
+  // ۴) UseCases
+  locator.registerSingleton<GetCurrentWeatherUseCase>(
+    GetCurrentWeatherUseCase(locator()),
+  );
+  locator.registerSingleton<GetForecastWeatherUseCase>(
+    GetForecastWeatherUseCase(locator()),
+  );
+  locator.registerSingleton<GetSuggestionCityUseCase>(
+    GetSuggestionCityUseCase(locator()),  // ← این خط رو اضافه کن
+  );
+  locator.registerSingleton<SaveCityUseCase>(
+    SaveCityUseCase(locator()),
+  );
+  locator.registerSingleton<GetAllCityUseCase>(
+    GetAllCityUseCase(locator()),
+  );
+  locator.registerSingleton<GetCityUseCase>(
+    GetCityUseCase(locator()),
+  );
+  locator.registerSingleton<DeleteCityUseCase>(
+    DeleteCityUseCase(locator()),
+  );
+
+  // ۵) Blocs / Cubits
+  locator.registerSingleton<BookmarkBloc>(
+    BookmarkBloc(locator(), locator(), locator(), locator()),
+  );
+  locator.registerSingleton<HomeBloc>(
+    HomeBloc(locator(), locator()),
+  );
+  locator.registerSingleton<BottomIconCubit>(BottomIconCubit());
+
+  // ۶) Dio
+  locator.registerLazySingleton<Dio>(() => Dio());
 }
