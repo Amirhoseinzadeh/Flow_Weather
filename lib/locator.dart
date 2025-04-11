@@ -12,7 +12,6 @@ import 'package:flow_weather/features/weather_feature/data/data_source/remote/ap
 import 'package:flow_weather/features/weather_feature/data/repository/weather_repositoryimpl.dart';
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_current_weather_usecase.dart';
-import 'package:flow_weather/features/weather_feature/domain/use_cases/get_forecast_usecase.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_forecast_weather_usecase.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:get_it/get_it.dart';
