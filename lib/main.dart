@@ -1,6 +1,7 @@
   import 'package:flow_weather/core/bloc/bottom_icon_cubit.dart';
   import 'package:flow_weather/core/widgets/main_wrapper.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_icon_cubit.dart';
   import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flow_weather/features/weather_feature/presentation/screens/home_screen.dart';
   import 'package:flow_weather/locator.dart';
@@ -25,6 +26,7 @@ import 'package:flow_weather/features/weather_feature/presentation/screens/home_
             BlocProvider(create: (_) => locator<HomeBloc>()),
             BlocProvider(create: (_) => locator<BottomIconCubit>()),
             BlocProvider(create: (_) => locator<BookmarkBloc>()),
+            BlocProvider(create: (_) => locator<BookmarkIconCubit>()),
           ],
           child: HomeScreen(),
         ),

@@ -27,17 +27,17 @@ class ApiProvider{
     final now = DateTime.now();
     final df = DateFormat('yyyy-MM-dd');
     final startDate = df.format(now);                   // امروز
-    final endDate = df.format(now.add(const Duration(days: 7))); // هفت روز بعد
+    final endDate = df.format(now.add(const Duration(days: 14)));
 
     final response = await dio.get(
       'https://api.open-meteo.com/v1/forecast',
       queryParameters: {
         'latitude': params.lat,
         'longitude': params.lon,
-        'daily': 'weathercode,temperature_2m_max',
+        'daily': 'weathercode,temperature_2m_max,temperature_2m_min', // دمای حداقل اضافه شد
         'hourly': 'temperature_2m,weathercode',
-        'start_date': startDate,   // ← باید همین باشه
-        'end_date': endDate,       // ← هفت روز جلوتر
+        'start_date': startDate,
+        'end_date': endDate,
         'timezone': 'auto',
       },
     );

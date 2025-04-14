@@ -25,7 +25,6 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
     BlocProvider.of<BookmarkBloc>(context).add(GetAllCityEvent());
   }
 

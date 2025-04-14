@@ -1,5 +1,3 @@
-// lib/features/weather_feature/presentation/screens/home_screen.dart
-
 import 'package:flow_weather/features/weather_feature/data/models/suggest_city_model.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/current_city_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_suggestion_city_usecase.dart';
@@ -8,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
-
 import 'package:flow_weather/core/widgets/app_background.dart';
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/utils/date_converter.dart';
@@ -23,13 +20,12 @@ import 'package:flow_weather/locator.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   static const _initialCity = "Amol";
 
   late TextEditingController _searchController;
@@ -45,9 +41,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     _searchController = TextEditingController();
     _searchFocus = FocusNode();
-    // پاک کردن اولیه
     _searchController.clear();
-    // انتخاب متن وقتی فیلد فوکوس می‌گیره
     _searchFocus.addListener(() {
       if (_searchFocus.hasFocus) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -69,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    // محاسبهٔ پس‌زمینه
+    super.build(context);
     final now = DateTime.now();
     final hourStr = DateFormat('kk').format(now);
     final bgImage = AppBackground.getBackGroundImage(hourStr);
@@ -80,11 +74,21 @@ class _HomeScreenState extends State<HomeScreen>
         BlocProvider.value(value: _bookmarkBloc),
       ],
       child: Scaffold(
-        drawer: const Drawer(child: BookmarkDrawerContent()),
+        drawer: Drawer(
+          child: Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/4.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: const BookmarkDrawerContent(),
+          ),
+        ),
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
-              image: bgImage,
+              image: AssetImage("assets/images/5.png"),
               fit: BoxFit.cover,
             ),
           ),
@@ -94,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 // ——— Search Row ———
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     children: [
                       Builder(builder: (ctx) {
@@ -103,20 +107,13 @@ class _HomeScreenState extends State<HomeScreen>
                           onPressed: () => Scaffold.of(ctx).openDrawer(),
                         );
                       }),
-                      // داخل HomeScreen، جایگزینِ کد قبلیِ TypeAheadField
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(12.0),
                           child: TypeAheadField<Data>(
-                            // ۱) از کنترلر و فوکوس خودت استفاده کن
                             controller: _searchController,
                             focusNode: _searchFocus,
-
-                            // ۲) وقتی کاربر تایپ می‌کند، پیشنهادها اینجا ساخته می‌شوند
-                            suggestionsCallback: (pattern) =>
-                                _suggestionUseCase(pattern),
-
-                            // ۳) این تابع ویجتِ هر پیشنهاد را می‌سازد
+                            suggestionsCallback: (pattern) => _suggestionUseCase(pattern),
                             itemBuilder: (context, Data model) {
                               return ListTile(
                                 leading: const Icon(Icons.location_on),
@@ -124,8 +121,6 @@ class _HomeScreenState extends State<HomeScreen>
                                 subtitle: Text('${model.region ?? ''}, ${model.country ?? ''}'),
                               );
                             },
-
-                            // ۴) این تابع خودش TextField را می‌سازد (جایگزین textFieldConfiguration شده)
                             builder: (context, TextEditingController controller, FocusNode focusNode) {
                               return TextField(
                                 controller: controller,
@@ -142,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen>
                                   ),
                                 ),
                                 onTap: () {
-                                  // سلکت کامل متن هنگام فوکوس
                                   Future.delayed(const Duration(milliseconds: 50), () {
                                     controller.selection = TextSelection(
                                       baseOffset: 0,
@@ -151,35 +145,27 @@ class _HomeScreenState extends State<HomeScreen>
                                   });
                                 },
                                 onChanged: (value) {
-                                  // caret رو آخر متن نگه دار
                                   controller.selection = TextSelection.fromPosition(
                                     TextPosition(offset: controller.text.length),
                                   );
                                 },
                                 onSubmitted: (value) {
-                                  // وقتی اینتر زد، فقط Current Weather رو لود کن
                                   context.read<HomeBloc>().add(LoadCwEvent(value));
                                 },
                               );
                             },
-
-                            // ۵) وقتی روی یک پیشنهاد کلیک شد
                             onSelected: (Data model) async {
-                              FocusScope.of(context).unfocus();                // کیبورد رو ببند
-                              _searchController.text = model.name ?? '';       // متن فیلد رو ست کن
+                              FocusScope.of(context).unfocus();
+                              _searchController.text = model.name ?? '';
                               _searchController.selection = TextSelection.fromPosition(
                                 TextPosition(offset: _searchController.text.length),
                               );
-
-                              // بعدش Current + Forecast رو لود کن
                               final latLon = await getCoordinatesFromCityName(model.name!);
                               context.read<HomeBloc>().add(LoadCwEvent(model.name!));
                               context.read<HomeBloc>().add(
                                 LoadFwEvent(ForecastParams(latLon.latitude, latLon.longitude)),
                               );
                             },
-
-                            // ۶) سفارشی‌سازی لودینگ و حالت خالی
                             loadingBuilder: (context) => const SizedBox.shrink(),
                             emptyBuilder: (context) => const SizedBox.shrink(),
                           ),
@@ -190,9 +176,7 @@ class _HomeScreenState extends State<HomeScreen>
                         buildWhen: (p, c) => p.cwStatus != c.cwStatus,
                         builder: (context, state) {
                           if (state.cwStatus is CwCompleted) {
-                            final name =
-                            (state.cwStatus as CwCompleted).currentCityEntity.name!;
-                            // رفرش وضعیت بوکمارک
+                            final name = (state.cwStatus as CwCompleted).currentCityEntity.name!;
                             _bookmarkBloc.add(GetCityByNameEvent(name));
                             return BookMarkIcon(name: name);
                           }
@@ -200,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen>
                             return const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             );
                           }
                           return const SizedBox.shrink();
@@ -212,17 +196,14 @@ class _HomeScreenState extends State<HomeScreen>
 
                 // ——— Current Weather & Forecast ———
                 BlocBuilder<HomeBloc, HomeState>(
-                  buildWhen: (p, c) =>
-                  p.cwStatus != c.cwStatus || p.fwStatus != c.fwStatus,
+                  buildWhen: (p, c) => p.cwStatus != c.cwStatus || p.fwStatus != c.fwStatus,
                   builder: (context, state) {
-                    // 1) Loading Current
                     if (state.cwStatus is CwLoading) {
                       return const SizedBox(
                         height: 200,
                         child: Center(child: DotLoadingWidget()),
                       );
                     }
-                    // 2) Error Current
                     if (state.cwStatus is CwError) {
                       return const SizedBox(
                         height: 200,
@@ -231,10 +212,8 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       );
                     }
-                    // 3) Completed Current
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).currentCityEntity;
-                      // لود یکبار Forecast
                       if (!_isForecastLoaded) {
                         _homeBloc.add(LoadFwEvent(ForecastParams(
                           city.coord!.lat!,
@@ -242,29 +221,65 @@ class _HomeScreenState extends State<HomeScreen>
                         )));
                         _isForecastLoaded = true;
                       }
-                      final sunrise = DateConverter.changeDtToDateTimeHour(
-                          city.sys!.sunrise, city.timezone);
-                      final sunset = DateConverter.changeDtToDateTimeHour(
-                          city.sys!.sunset, city.timezone);
+                      final sunrise = DateConverter.changeDtToDateTimeHour(city.sys!.sunrise, city.timezone);
+                      final sunset = DateConverter.changeDtToDateTimeHour(city.sys!.sunset, city.timezone);
 
                       return Column(
                         children: [
-                          // — Current City PageView —
-                          SizedBox(
-                            height: 400,
-                            child: PageView(
+                          // — Current City Info —
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6,horizontal: 16),
+                            padding: const EdgeInsets.all(5),
+                            // decoration: BoxDecoration(
+                            //   color: Colors.grey.withOpacity(.05),
+                            //   borderRadius: BorderRadius.circular(16),
+                            // ),
+                            child: Column(
                               children: [
-                                // صفحهٔ اصلی
-                                _buildCurrentPage(city, sunrise, sunset),
-                                // صفحهٔ جزئیات (اختیاری)
-                                const Center(
-                                    child: Text("More details...",
-                                        style: TextStyle(color: Colors.white))),
+                                Text(city.name ?? '', style: const TextStyle(fontSize: 30, color: Colors.white)),
+                                const SizedBox(height: 8),
+                                Text(city.weather?[0].description ?? '', style: const TextStyle(fontSize: 20, color: Colors.white70)),
+                                const SizedBox(height: 10),
+                                AppBackground.setIconForMain(city.weather?[0].description ?? ''),
+                                Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 56, color: Colors.white)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Text("Wind", style: TextStyle(color: Colors.amber)),
+                                        Text("${city.wind!.speed!} m/s", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("Sunrise", style: TextStyle(color: Colors.amber)),
+                                        Text(sunrise, style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("Sunset", style: TextStyle(color: Colors.amber)),
+                                        Text(sunset, style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("Humidity", style: TextStyle(color: Colors.amber)),
+                                        Text("${city.main!.humidity!}%", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          const Divider(color: Colors.white24, thickness: 2),
+                          const Divider(color: Colors.white12, thickness: 1),
 
                           // — Hourly & Daily Forecast —
                           BlocBuilder<HomeBloc, HomeState>(
@@ -275,51 +290,88 @@ class _HomeScreenState extends State<HomeScreen>
                               }
                               if (s2.fwStatus is FwError) {
                                 return const Center(
-                                  child: Text("Error loading forecast",
-                                      style: TextStyle(color: Colors.red)),
+                                  child: Text("Error loading forecast", style: TextStyle(color: Colors.red)),
                                 );
                               }
-                              final forecast =
-                                  (s2.fwStatus as FwCompleted).forecastEntity;
+                              final forecast = (s2.fwStatus as FwCompleted).forecastEntity;
                               return Column(
                                 children: [
-                                  SizedBox(
-                                    height: 110,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: forecast.hours.length,
-                                      itemBuilder: (ctx, i) {
-                                        final h = forecast.hours[i];
-                                        final lbl = DateFormat('HH:mm')
-                                            .format(DateTime.parse(h.time));
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                            children: [
-                                              Text(lbl,
-                                                  style: const TextStyle(
-                                                      color: Colors.white70)),
-                                              const SizedBox(height: 6),
-                                              Image.asset(h.conditionIcon,
-                                                  width: 36, height: 36),
-                                              const SizedBox(height: 6),
-                                              Text('${h.temperature.round()}°',
-                                                  style: const TextStyle(
-                                                      color: Colors.white)),
-                                            ],
+                                  // Hourly Forecast
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(vertical: 6,horizontal: 16),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Hourly Forecast",
+                                          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          height: 100,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: forecast.hours.length,
+                                            itemBuilder: (ctx, i) {
+                                              final h = forecast.hours[i];
+                                              final lbl = DateFormat('HH:mm').format(DateTime.parse(h.time));
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      i == 0 ? "Now" : lbl,
+                                                      style: const TextStyle(color: Colors.white70),
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Image.asset(
+                                                      h.conditionIcon,
+                                                      width: 40,
+                                                      height: 40,
+                                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      '${h.temperature.round()}°',
+                                                      style: const TextStyle(color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
                                           ),
-                                        );
-                                      },
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  const Divider(
-                                      color: Colors.white24, thickness: 2),
-                                  ForecastNextDaysWidget(
-                                      forecastDays: forecast.days),
+                                  const Divider(color: Colors.white12, thickness: 1),
+
+                                  // Daily Forecast
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(vertical: 6,horizontal: 16),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withOpacity(.2),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "14-Day Forecast",
+                                          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        ForecastNextDaysWidget(forecastDays: forecast.days),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               );
                             },
@@ -338,67 +390,12 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildCurrentPage(
-      CurrentCityEntity city, String sunrise, String sunset) {
-    return Column(
-      children: [
-        const SizedBox(height: 40),
-        Text(city.name ?? '',
-            style: const TextStyle(fontSize: 32, color: Colors.white)),
-        const SizedBox(height: 8),
-        Text(city.weather?[0].description ?? '',
-            style: const TextStyle(fontSize: 18, color: Colors.white70)),
-        const SizedBox(height: 16),
-        AppBackground.setIconForMain(
-            city.weather?[0].description ?? ''),
-        const SizedBox(height: 16),
-        Text('${city.main?.temp?.round() ?? 0}°',
-            style: const TextStyle(fontSize: 64, color: Colors.white)),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(children: [
-              const Text('Max', style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 4),
-              Text('${city.main?.tempMax?.round() ?? 0}°',
-                  style: const TextStyle(color: Colors.white)),
-            ]),
-            const SizedBox(width: 24),
-            Column(children: [
-              const Text('Min', style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 4),
-              Text('${city.main?.tempMin?.round() ?? 0}°',
-                  style: const TextStyle(color: Colors.white)),
-            ]),
-            const SizedBox(width: 24),
-            Column(children: [
-              const Text('Wind', style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 4),
-              Text('${city.wind?.speed ?? 0} m/s',
-                  style: const TextStyle(color: Colors.white)),
-            ]),
-            const SizedBox(width: 24),
-            Column(children: [
-              const Text('Humidity', style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 4),
-              Text('${city.main?.humidity ?? 0}%',
-                  style: const TextStyle(color: Colors.white)),
-            ]),
-          ],
-        ),
-      ],
-    );
-  }
-
   @override
   bool get wantKeepAlive => true;
 }
 
-// تابع کمکی برای تبدیل نام شهر به Lat/Lon
 Future<LatLon> getCoordinatesFromCityName(String cityName) async {
-  final resp = await Dio().get(
-      'https://geocoding-api.open-meteo.com/v1/search?name=$cityName');
+  final resp = await Dio().get('https://geocoding-api.open-meteo.com/v1/search?name=$cityName');
   final r = resp.data['results'][0];
   return LatLon(r['latitude'], r['longitude']);
 }

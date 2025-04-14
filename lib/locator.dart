@@ -8,6 +8,7 @@ import 'package:flow_weather/features/bookmark_feature/domain/use_cases/get_all_
 import 'package:flow_weather/features/bookmark_feature/domain/use_cases/get_city_usecase.dart' show GetCityUseCase;
 import 'package:flow_weather/features/bookmark_feature/domain/use_cases/save_city_usecase.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_icon_cubit.dart';
 import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
 import 'package:flow_weather/features/weather_feature/data/repository/weather_repositoryimpl.dart';
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
@@ -43,7 +44,7 @@ Future<void> setup() async {
     GetForecastWeatherUseCase(locator()),
   );
   locator.registerSingleton<GetSuggestionCityUseCase>(
-    GetSuggestionCityUseCase(locator()),  // ← این خط رو اضافه کن
+    GetSuggestionCityUseCase(locator()),
   );
   locator.registerSingleton<SaveCityUseCase>(
     SaveCityUseCase(locator()),
@@ -66,6 +67,7 @@ Future<void> setup() async {
     HomeBloc(locator(), locator()),
   );
   locator.registerSingleton<BottomIconCubit>(BottomIconCubit());
+  locator.registerSingleton<BookmarkIconCubit>(BookmarkIconCubit()); // اضافه کردن کیوبیت جدید
 
   // ۶) Dio
   locator.registerLazySingleton<Dio>(() => Dio());

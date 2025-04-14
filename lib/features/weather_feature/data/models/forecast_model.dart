@@ -8,30 +8,31 @@ class ForecastModel extends ForecastEntity {
   }) : super(days: days, hours: hours);
 
   factory ForecastModel.fromJson(Map<String, dynamic> json) {
-    // --- نگاشت روزانه (همانند قبل) ---
+    // --- نگاشت روزانه ---
     final daily = json['daily'];
     final timesD = daily['time'] as List;
-    final tempsD = daily['temperature_2m_max'] as List;
+    final tempsMaxD = daily['temperature_2m_max'] as List;
+    final tempsMinD = daily['temperature_2m_min'] as List; // دمای حداقل اضافه شد
     final codesD = daily['weathercode'] as List;
 
     final days = List<ForecastDayEntity>.generate(timesD.length, (i) {
       return ForecastDayEntity(
         date: timesD[i] as String,
-        maxTempC: (tempsD[i] as num).toDouble(),
+        minTempC: (tempsMinD[i] as num).toDouble(), // دمای حداقل
+        maxTempC: (tempsMaxD[i] as num).toDouble(), // دمای ماکزیمم
         conditionIcon: _mapWeatherCodeToIcon(codesD[i] as int),
       );
     });
 
     // --- نگاشت ساعتی از ساعت کنونی ---
     final hourly = json['hourly'];
-
     final timesH = hourly['time'] as List;
     final tempsH = hourly['temperature_2m'] as List;
     final codesH = hourly['weathercode'] as List;
 
     final dateTimes = timesH.map((t) => DateTime.parse(t as String)).toList();
     final now = DateTime.now();
-    final nowRounded = DateTime(now.year, now.month, now.day, now.hour); // این مهمه
+    final nowRounded = DateTime(now.year, now.month, now.day, now.hour);
 
     int startIndex = dateTimes.indexWhere((dt) => dt.isAfter(nowRounded) || dt.isAtSameMomentAs(nowRounded));
     if (startIndex < 0) startIndex = 0;
@@ -47,14 +48,32 @@ class ForecastModel extends ForecastEntity {
       );
     });
 
-
     return ForecastModel(days: days, hours: hours);
   }
 }
 
 String _mapWeatherCodeToIcon(int code) {
-  if (code == 0) return "assets/images/icons8-sun-96.png";
-  if (code >= 1 && code <= 3) return "assets/images/icons8-partly-cloudy-day-80.png";
-  if (code >= 61 && code <= 65) return "assets/images/icons8-heavy-rain-80.png";
-  return "assets/images/icons8-windy-weather-80.png";
+  if (code == 0) {
+    return "assets/images/icons8-sun-96.png"; // clear sky
+  } else if (code >= 1 && code <= 3) {
+    return "assets/images/icons8-partly-cloudy-day-80.png"; // clouds
+  } else if (code == 45 || code == 48) {
+    return "assets/images/icons8-clouds-80.png"; // (می‌تونی آیکون fog بزاری)
+  } else if (code >= 51 && code <= 57) {
+    return "assets/images/icons8-rain-cloud-80.png"; // drizzle
+  } else if (code >= 61 && code <= 67) {
+    return "assets/images/icons8-heavy-rain-80.png"; // rain
+  } else if (code >= 71 && code <= 77) {
+    return "assets/images/icons8-snow-80.png"; // snow
+  } else if (code >= 80 && code <= 82) {
+    return "assets/images/icons8-heavy-rain-80.png"; // rain showers
+  } else if (code >= 85 && code <= 86) {
+    return "assets/images/icons8-snow-80.png"; // snow showers
+  } else if (code == 95) {
+    return "assets/images/icons8-storm-80.png"; // thunderstorm
+  } else if (code == 96 || code == 99) {
+    return "assets/images/icons8-storm-80.png"; // thunderstorm with hail
+  } else {
+    return "assets/images/icons8-windy-weather-80.png"; // default
+  }
 }
