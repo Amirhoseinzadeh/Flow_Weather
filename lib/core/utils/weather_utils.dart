@@ -1,5 +1,6 @@
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
+import 'package:flow_weather/features/weather_feature/presentation/widgets/forecast_next_days_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -15,7 +16,6 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/fw_statu
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flow_weather/features/weather_feature/presentation/widgets/bookmark_drawer_content.dart';
 import 'package:flow_weather/features/weather_feature/presentation/widgets/bookmark_icon.dart';
-import 'package:flow_weather/features/weather_feature/presentation/widgets/forecast_next_days_widget.dart';
 import 'package:flow_weather/locator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,13 +27,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   String getInitialCity() {
-    return "آمل";
+    return "Amol";
   }
 
   late TextEditingController _searchController;
   late FocusNode _searchFocus;
-  bool _isForecastLoaded = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final HomeBloc _homeBloc;
   final _bookmarkBloc = locator<BookmarkBloc>();
@@ -46,10 +44,15 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     _searchController = TextEditingController();
     _searchFocus = FocusNode();
     _searchController.clear();
-
-    // لاگ برای بررسی تغییرات فوکوس
     _searchFocus.addListener(() {
-      print('TextField focus changed: ${_searchFocus.hasFocus}');
+      if (_searchFocus.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _searchController.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: _searchController.text.length,
+          );
+        });
+      }
     });
   }
 
@@ -57,7 +60,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   void dispose() {
     _searchController.dispose();
     _searchFocus.dispose();
-    _homeBloc.close();
     super.dispose();
   }
 
@@ -74,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         BlocProvider.value(value: _bookmarkBloc),
       ],
       child: Scaffold(
-        key: _scaffoldKey,
         drawer: Drawer(
           child: Container(
             decoration: const BoxDecoration(
@@ -101,28 +102,19 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
-                        onPressed: () {
-                          print('Drawer icon tapped, unfocusing TextField');
-                          _searchFocus.unfocus();
-                          FocusScope.of(context).unfocus();
-                          _scaffoldKey.currentState?.openDrawer();
-                        },
-                      ),
+                      Builder(builder: (ctx) {
+                        return IconButton(
+                          icon: const Icon(Icons.menu, color: Colors.white),
+                          onPressed: () => Scaffold.of(ctx).openDrawer(),
+                        );
+                      }),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: TypeAheadField<NeshanCityItem>(
                             controller: _searchController,
                             focusNode: _searchFocus,
-                            suggestionsCallback: (pattern) async {
-                              print('Suggestions requested for pattern: "$pattern"');
-                              if (pattern.isEmpty) {
-                                return [];
-                              }
-                              return await _suggestionUseCase(pattern);
-                            },
+                            suggestionsCallback: (pattern) => _suggestionUseCase(pattern),
                             itemBuilder: (context, NeshanCityItem model) {
                               return ListTile(
                                 leading: const Icon(Icons.location_on),
@@ -145,24 +137,35 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     borderSide: BorderSide(color: Colors.white),
                                   ),
                                 ),
+                                onTap: () {
+                                  Future.delayed(const Duration(milliseconds: 50), () {
+                                    controller.selection = TextSelection(
+                                      baseOffset: 0,
+                                      extentOffset: controller.text.length,
+                                    );
+                                  });
+                                },
+                                onChanged: (value) {
+                                  controller.selection = TextSelection.fromPosition(
+                                    TextPosition(offset: controller.text.length),
+                                  );
+                                },
                                 onSubmitted: (value) {
-                                  print('Text submitted: $value');
                                   context.read<HomeBloc>().add(LoadCwEvent(value));
-                                  _isForecastLoaded = false;
                                 },
                               );
                             },
                             onSelected: (NeshanCityItem model) async {
-                              print('City selected: ${model.title}, clearing TextField');
-                              _searchController.clear();
-                              _searchFocus.unfocus();
                               FocusScope.of(context).unfocus();
+                              _searchController.text = model.title ?? '';
+                              _searchController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: _searchController.text.length),
+                              );
                               final lat = model.location?.y;
                               final lon = model.location?.x;
                               if (lat != null && lon != null) {
                                 context.read<HomeBloc>().add(LoadCwEvent(model.title!));
                                 context.read<HomeBloc>().add(LoadFwEvent(ForecastParams(lat, lon)));
-                                _isForecastLoaded = false;
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('مختصات شهر پیدا نشد')),
@@ -218,14 +221,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                     }
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
-                      if (!_isForecastLoaded) {
-                        final lat = city.coord?.lat;
-                        final lon = city.coord?.lon;
-                        if (lat != null && lon != null) {
-                          _homeBloc.add(LoadFwEvent(ForecastParams(lat, lon)));
-                          _isForecastLoaded = true;
-                        }
-                      }
 
                       double minTemp = 0.0;
                       double maxTemp = 0.0;
@@ -244,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text(city.name ?? '', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: Colors.white)),
+                                Text(city.name ?? '', style: const TextStyle(fontSize: 30, color: Colors.white)),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
@@ -254,15 +249,15 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 AppBackground.setIconForMain(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
                                 ),
-                                Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 56, color: Colors.white)),
                                 const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("سرعت باد", style: TextStyle(color: Colors.amber)),
-                                        Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
+                                        const Text("باد", style: TextStyle(color: Colors.amber)),
+                                        Text("${city.wind?.speed ?? 0} متر/ثانیه", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),

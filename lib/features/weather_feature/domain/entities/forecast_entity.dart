@@ -1,10 +1,11 @@
+// forecast_entity.dart
 import 'package:equatable/equatable.dart';
 
 class ForecastDayEntity extends Equatable {
-  final String date;           // YYYY-MM-DD
-  final double minTempC;       // دمای حداقل
-  final double maxTempC;       // دمای ماکزیمم
-  final String conditionIcon;  // مسیر آیکون (assets)
+  final String date;
+  final double minTempC;
+  final double maxTempC;
+  final String conditionIcon;
 
   const ForecastDayEntity({
     required this.date,
@@ -18,9 +19,9 @@ class ForecastDayEntity extends Equatable {
 }
 
 class ForecastHourEntity extends Equatable {
-  final String time;           // YYYY-MM-DDTHH:mm
-  final double temperature;    // دمای ساعت
-  final String conditionIcon;  // مسیر آیکون (assets)
+  final String time;
+  final double temperature;
+  final String conditionIcon;
 
   const ForecastHourEntity({
     required this.time,

@@ -1,20 +1,20 @@
 import 'dart:ui';
-
-import 'package:flow_weather/core/params/ForecastParams.dart';
+import 'package:flow_weather/core/utils/load_city_weather.dart';
+import 'package:flow_weather/core/utils/weather_utils.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/cw_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dio/dio.dart';
-
-import '../../domain/entities/city_model.dart';
 import '../bloc/get_all_city_status.dart';
 
 class BookmarkScreen extends StatefulWidget {
   final PageController pageController;
 
-  BookmarkScreen({Key? key, required this.pageController}) : super(key: key);
+  const BookmarkScreen({super.key, required this.pageController});
 
   @override
   State<BookmarkScreen> createState() => _BookmarkScreenState();
@@ -23,9 +23,8 @@ class BookmarkScreen extends StatefulWidget {
 class _BookmarkScreenState extends State<BookmarkScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    BlocProvider.of<BookmarkBloc>(context).add(GetAllCityEvent());
+    context.read<BookmarkBloc>().add(GetAllCitiesEvent());
   }
 
   @override
@@ -35,166 +34,112 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
       backgroundColor: Colors.transparent,
       body: BlocBuilder<BookmarkBloc, BookmarkState>(
         buildWhen: (previous, current) {
-          /// rebuild UI just when allCityStatus Changed
-          if (current.getAllCityStatus == previous.getAllCityStatus) {
-            return false;
-          } else {
-            return true;
-          }
+          return previous.getAllCityStatus != current.getAllCityStatus;
         },
         builder: (context, state) {
-          /// show Loading for AllCityStatus
           if (state.getAllCityStatus is GetAllCityLoading) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
-          /// show Completed for AllCityStatus
           if (state.getAllCityStatus is GetAllCityCompleted) {
-            /// casting for getting cities
-            GetAllCityCompleted getAllCityCompleted =
-                state.getAllCityStatus as GetAllCityCompleted;
-            List<City> cities = getAllCityCompleted.cities;
+            final getAllCityCompleted = state.getAllCityStatus as GetAllCityCompleted;
+            final List<City> cities = getAllCityCompleted.cities;
 
             return SafeArea(
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     'WatchList',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 25,
                         fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Expanded(
-                    /// show text in center if there is no city bookmarked
-                    child: (cities.isEmpty)
-                        ? Center(
-                            child: Text(
-                              'there is no bookmark city',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          )
+                    child: cities.isEmpty
+                        ? const Center(
+                      child: Text(
+                        'هیچ شهری بوکمارک نشده است',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
                         : ListView.builder(
-                            itemCount: cities.length,
-                            itemBuilder: (context, index) {
-                              City city = cities[index];
-                              return GestureDetector (
-                                onTap: () async {
-                                  /// call for getting bookmarked city Data
-                                  final cityName = city.name;
-
-                                  // فرض کنیم متدی داری که با اسم شهر، مختصات رو می‌ده
-                                  final latLon = await getCoordinatesFromCityName(cityName);
-
-                                  BlocProvider.of<HomeBloc>(context).add(LoadCwEvent(cityName));
-                                  BlocProvider.of<HomeBloc>(context).add(
-                                    LoadFwEvent(ForecastParams(latLon.latitude, latLon.longitude)),
-                                  );
-                                  /// animate to HomeScreen for showing Data
-                                  widget.pageController.animateToPage(0,
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ClipRect(
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                          sigmaX: 5.0, sigmaY: 5.0),
-                                      child: Container(
-                                        width: width,
-                                        height: 60.0,
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(20)),
-                                            color:
-                                                Colors.grey.withOpacity(0.1)),
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 20.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                city.name,
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20),
-                                              ),
-                                              IconButton(
-                                                  onPressed: () {
-                                                    // ۱) حذف از دیتابیس
-                                                    context.read<BookmarkBloc>().add(DeleteCityEvent(city.name));
-                                                    // ۲) رفرش لیست بوکمارک‌ها
-                                                    context.read<BookmarkBloc>().add(GetAllCityEvent());
-
-                                                    // ۳) اگر HomeScreen داره همین شهر رو نشون می‌ده، وضعیت بوکمارکش رو هم رفرش کن
-                                                    final homeState = context.read<HomeBloc>().state.cwStatus;
-                                                    if (homeState is CwCompleted &&
-                                                        homeState.currentCityEntity.name == city.name) {
-                                                      context.read<BookmarkBloc>().add(GetCityByNameEvent(city.name));
-                                                    }
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.delete,
-                                                    color: Colors.redAccent,
-                                                  )),
-                                            ],
+                      itemCount: cities.length,
+                      itemBuilder: (context, index) {
+                        final city = cities[index];
+                        return GestureDetector(
+                          onTap: () async {
+                            await loadCityWeather(context, city.name);
+                            widget.pageController.animateToPage(
+                              0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ClipRect(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                                child: Container(
+                                  width: width,
+                                  height: 60.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                                    color: Colors.grey.withOpacity(0.1),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 20.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          city.name,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
                                           ),
                                         ),
-                                      ),
+                                        IconButton(
+                                          onPressed: () {
+                                            context.read<BookmarkBloc>().add(DeleteCityEvent(city.name));
+                                            context.read<BookmarkBloc>().add(GetAllCitiesEvent());
+                                            final homeState = context.read<HomeBloc>().state.cwStatus;
+                                            if (homeState is CwCompleted && homeState.meteoCurrentWeatherEntity.name == city.name) {
+                                              context.read<BookmarkBloc>().add(FindCityByNameEvent(city.name));
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              );
-                            }),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             );
           }
 
-          /// show Error for AllCityStatus
           if (state.getAllCityStatus is GetAllCityError) {
-            /// casting for getting Error
-            GetAllCityError getAllCityError =
-                state.getAllCityStatus as GetAllCityError;
-
-            return Center(
-              child: Text(getAllCityError.message!),
-            );
+            final getAllCityError = state.getAllCityStatus as GetAllCityError;
+            return Center(child: Text(getAllCityError.message ?? 'خطا', style: const TextStyle(color: Colors.white)));
           }
 
-          /// show Default value
-          return Container();
+          return const SizedBox.shrink();
         },
       ),
     );
   }
-
 }
-
-final dio = Dio();
-Future<LatLon> getCoordinatesFromCityName(String cityName) async {
-  final response = await dio.get('https://geocoding-api.open-meteo.com/v1/search?name=$cityName');
-  final results = response.data['results'];
-  final lat = results[0]['latitude'];
-  final lon = results[0]['longitude'];
-  return LatLon(lat, lon);
-}
-
-class LatLon {
-  final double latitude;
-  final double longitude;
-
-  LatLon(this.latitude, this.longitude);
-}
-

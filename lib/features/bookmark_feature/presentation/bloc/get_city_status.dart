@@ -1,33 +1,31 @@
-
 import 'package:equatable/equatable.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
 
-import '../../domain/entities/city_model.dart';
+abstract class GetCityStatus extends Equatable {
+  const GetCityStatus();
 
-abstract class GetCityStatus extends Equatable{}
-
-// loading state
-class GetCityLoading extends GetCityStatus{
   @override
-  // TODO: implement props
   List<Object?> get props => [];
 }
 
-// loaded state
-class GetCityCompleted extends GetCityStatus{
+class GetCityLoading extends GetCityStatus {
+  const GetCityLoading();
+}
+
+class GetCityCompleted extends GetCityStatus {
   final City? city;
-  GetCityCompleted(this.city);
+
+  const GetCityCompleted(this.city);
 
   @override
-  // TODO: implement props
   List<Object?> get props => [city];
 }
 
-// error state
-class GetCityError extends GetCityStatus{
-  final String? message;
-  GetCityError(this.message);
+class GetCityError extends GetCityStatus {
+  final String error;
+
+  const GetCityError(this.error);
 
   @override
-  // TODO: implement props
-  List<Object?> get props => [message];
+  List<Object?> get props => [error];
 }

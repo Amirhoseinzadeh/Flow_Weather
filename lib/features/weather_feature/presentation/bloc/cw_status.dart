@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flow_weather/features/weather_feature/domain/entities/current_city_entity.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flutter/material.dart';
 
 @immutable
@@ -15,13 +15,13 @@ class CwLoading extends CwStatus{
 
 /// loaded state
 class CwCompleted extends CwStatus{
-  final CurrentCityEntity currentCityEntity;
-  CwCompleted(this.currentCityEntity);
+  final MeteoCurrentWeatherEntity meteoCurrentWeatherEntity;
+  CwCompleted(this.meteoCurrentWeatherEntity);
 
   @override
   // TODO: implement props
   List<Object?> get props => [
-    currentCityEntity,
+    meteoCurrentWeatherEntity,
   ];
 }
 

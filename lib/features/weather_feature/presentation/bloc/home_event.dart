@@ -1,14 +1,25 @@
-part of 'home_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flow_weather/core/params/ForecastParams.dart';
 
-@immutable
-sealed class HomeEvent {}
+abstract class HomeEvent extends Equatable {
+  const HomeEvent();
+
+  @override
+  List<Object> get props => [];
+}
 
 class LoadCwEvent extends HomeEvent {
   final String cityName;
-  LoadCwEvent(this.cityName);
+  const LoadCwEvent(this.cityName);
+
+  @override
+  List<Object> get props => [cityName];
 }
 
 class LoadFwEvent extends HomeEvent {
   final ForecastParams forecastParams;
-  LoadFwEvent(this.forecastParams);
+  const LoadFwEvent(this.forecastParams);
+
+  @override
+  List<Object> get props => [forecastParams];
 }

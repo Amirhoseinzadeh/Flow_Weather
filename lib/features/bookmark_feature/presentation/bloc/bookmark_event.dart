@@ -1,28 +1,43 @@
-part of 'bookmark_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
 
-@immutable
-abstract class BookmarkEvent {}
+abstract class BookmarkEvent extends Equatable {
+  const BookmarkEvent();
 
-class GetAllCityEvent extends BookmarkEvent {
-
+  @override
+  List<Object?> get props => [];
 }
 
-class GetCityByNameEvent extends BookmarkEvent {
-  final String cityName;
-  GetCityByNameEvent(this.cityName);
+class SaveCityEvent extends BookmarkEvent {
+  final City city;
+  const SaveCityEvent(this.city);
+
+  @override
+  List<Object?> get props => [city];
 }
 
-class SaveCwEvent extends BookmarkEvent {
+class GetAllCitiesEvent extends BookmarkEvent {}
+
+class FindCityByNameEvent extends BookmarkEvent {
   final String name;
-  SaveCwEvent(this.name);
+  const FindCityByNameEvent(this.name);
+
+  @override
+  List<Object?> get props => [name];
 }
-
-class SaveCityInitialEvent extends BookmarkEvent {
-
-}
-
 
 class DeleteCityEvent extends BookmarkEvent {
   final String name;
-  DeleteCityEvent(this.name);
+  const DeleteCityEvent(this.name);
+
+  @override
+  List<Object?> get props => [name];
+}
+
+class UpdateCityEvent extends BookmarkEvent {
+  final City city;
+  const UpdateCityEvent(this.city);
+
+  @override
+  List<Object?> get props => [city];
 }

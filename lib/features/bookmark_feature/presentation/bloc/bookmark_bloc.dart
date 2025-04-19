@@ -1,112 +1,97 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
+import 'package:flow_weather/core/resources/data_state.dart';
 import 'package:flow_weather/features/bookmark_feature/domain/use_cases/delete_city_usecase.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/use_cases/find_city_by_name_use_case.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/use_cases/get_all_city_usecase.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/use_cases/save_city_usecase.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/use_cases/update_city_usecase.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/delete_city_status.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_all_city_status.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_city_status.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/save_city_status.dart';
-import 'package:flutter/cupertino.dart';
-import '../../../../core/resources/data_state.dart';
-import '../../../../core/usecases/UseCase.dart';
-import '../../domain/use_cases/get_all_city_usecase.dart';
-import '../../domain/use_cases/get_city_usecase.dart';
-import '../../domain/use_cases/save_city_usecase.dart';
-import 'delete_city_status.dart';
-part 'bookmark_state.dart';
-part 'bookmark_event.dart';
+import 'package:flow_weather/features/bookmark_feature/presentation/bloc/update_city_status.dart';
 
 class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
-  GetAllCityUseCase getAllCityUseCase;
-  GetCityUseCase getCityUseCase;
-  SaveCityUseCase saveCityUseCase;
-  DeleteCityUseCase deleteCityUseCase;
+  final SaveCityUseCase _saveCityUseCase;
+  final GetAllCitiesUseCase _getAllCitiesUseCase;
+  final FindCityByNameUseCase _findCityByNameUseCase;
+  final DeleteCityUseCase _deleteCityUseCase;
+  final UpdateCityUseCase _updateCityUseCase;
 
-  BookmarkBloc(this.getCityUseCase, this.getAllCityUseCase, this.saveCityUseCase, this.deleteCityUseCase) : super(
-      BookmarkState(
-          getAllCityStatus: GetAllCityLoading(),
-          getCityStatus: GetCityLoading(),
-          saveCityStatus: SaveCityInitial(),
-          deleteCityStatus: DeleteCityInitial()
-      )) {
-
-    /// get All city
-    on<GetAllCityEvent>((event, emit) async {
-
-      /// emit Loading state
-      emit(state.copyWith(newAllCityStatus: GetAllCityLoading()));
-
-      DataState dataState = await getAllCityUseCase(NoParams());
-
-      /// emit Complete state
-      if(dataState is DataSuccess){
-        emit(state.copyWith(newAllCityStatus: GetAllCityCompleted(dataState.data)));
-      }
-
-      /// emit Error state
-      if(dataState is DataFailed){
-        emit(state.copyWith(newAllCityStatus: GetAllCityError(dataState.error)));
-      }
-    });
-
-    /// get city By name event
-    on<GetCityByNameEvent>((event, emit) async {
-
-      /// emit Loading state
-      emit(state.copyWith(newCityStatus: GetCityLoading()));
-
-      DataState dataState = await getCityUseCase(event.cityName);
-
-      /// emit Complete state
-      if(dataState is DataSuccess){
-        emit(state.copyWith(newCityStatus: GetCityCompleted(dataState.data)));
-      }
-
-      /// emit Error state
-      if(dataState is DataFailed){
-        emit(state.copyWith(newCityStatus: GetCityError(dataState.error)));
-      }
-    });
-
-
-    /// Save City Event
-    on<SaveCwEvent>((event, emit) async {
-
-      /// emit Loading state
+  BookmarkBloc(
+      this._saveCityUseCase,
+      this._getAllCitiesUseCase,
+      this._findCityByNameUseCase,
+      this._deleteCityUseCase,
+      this._updateCityUseCase,
+      ) : super(BookmarkState.initial()) {
+    on<SaveCityEvent>((event, emit) async {
       emit(state.copyWith(newSaveStatus: SaveCityLoading()));
-
-      DataState dataState = await saveCityUseCase(event.name);
-
-      /// emit Complete state
-      if(dataState is DataSuccess){
-        emit(state.copyWith(newSaveStatus: SaveCityCompleted(dataState.data)));
-      }
-
-      /// emit Error state
-      if(dataState is DataFailed){
-        emit(state.copyWith(newSaveStatus: SaveCityError(dataState.error)));
+      final result = await _saveCityUseCase(event.city);
+      if (result is DataSuccess) {
+        emit(state.copyWith(newSaveStatus: SaveCityCompleted(result.data!)));
+        final cities = await _getAllCitiesUseCase(null);
+        if (cities is DataSuccess) {
+          emit(state.copyWith(newAllCityStatus: GetAllCityCompleted(cities.data!)));
+        } else {
+          emit(state.copyWith(newAllCityStatus: GetAllCityError('خطا در دریافت شهرها')));
+        }
+      } else {
+        emit(state.copyWith(newSaveStatus: SaveCityError('خطا در ذخیره شهر')));
       }
     });
 
-    /// set to init again SaveCity (برای بار دوم و سوم و غیره باید وضعیت دوباره به حالت اول برگرده وگرنه بوکمارک پر خواهد ماند)
-    on<SaveCityInitialEvent>((event, emit) async {
-      emit(state.copyWith(newSaveStatus: SaveCityInitial()));
+    on<GetAllCitiesEvent>((event, emit) async {
+      emit(state.copyWith(newAllCityStatus: GetAllCityLoading()));
+      final result = await _getAllCitiesUseCase(null);
+      if (result is DataSuccess) {
+        emit(state.copyWith(newAllCityStatus: GetAllCityCompleted(result.data!)));
+      } else {
+        emit(state.copyWith(newAllCityStatus: GetAllCityError('خطا در دریافت شهرها')));
+      }
     });
 
+    on<FindCityByNameEvent>((event, emit) async {
+      emit(state.copyWith(newCityStatus: GetCityLoading()));
+      final result = await _findCityByNameUseCase(event.name);
+      if (result is DataSuccess) {
+        emit(state.copyWith(newCityStatus: GetCityCompleted(result.data)));
+      } else {
+        emit(state.copyWith(newCityStatus: GetCityError('خطا در جستجوی شهر')));
+      }
+    });
 
-    /// City Delete Event
     on<DeleteCityEvent>((event, emit) async {
-      /// emit Loading state
       emit(state.copyWith(newDeleteStatus: DeleteCityLoading()));
-
-      DataState dataState = await deleteCityUseCase(event.name);
-
-      /// emit Complete state
-      if(dataState is DataSuccess){
-        emit(state.copyWith(newDeleteStatus: DeleteCityCompleted(dataState.data)));
+      final result = await _deleteCityUseCase(event.name);
+      if (result is DataSuccess) {
+        emit(state.copyWith(newDeleteStatus: DeleteCityCompleted(result.data!)));
+        final cities = await _getAllCitiesUseCase(null);
+        if (cities is DataSuccess) {
+          emit(state.copyWith(newAllCityStatus: GetAllCityCompleted(cities.data!)));
+        } else {
+          emit(state.copyWith(newAllCityStatus: GetAllCityError('خطا در دریافت شهرها')));
+        }
+      } else {
+        emit(state.copyWith(newDeleteStatus: DeleteCityError('خطا در حذف شهر')));
       }
+    });
 
-      /// emit Error state
-      if(dataState is DataFailed){
-        emit(state.copyWith(newDeleteStatus: DeleteCityError(dataState.error)));
+    on<UpdateCityEvent>((event, emit) async {
+      emit(state.copyWith(newUpdateStatus: UpdateCityLoading()));
+      final result = await _updateCityUseCase(event.city);
+      if (result is DataSuccess) {
+        emit(state.copyWith(newUpdateStatus: UpdateCityCompleted(result.data!)));
+        final cities = await _getAllCitiesUseCase(null);
+        if (cities is DataSuccess) {
+          emit(state.copyWith(newAllCityStatus: GetAllCityCompleted(cities.data!)));
+        } else {
+          emit(state.copyWith(newAllCityStatus: GetAllCityError('خطا در دریافت شهرها')));
+        }
+      } else {
+        emit(state.copyWith(newUpdateStatus: UpdateCityError('خطا در آپدیت شهر')));
       }
     });
   }

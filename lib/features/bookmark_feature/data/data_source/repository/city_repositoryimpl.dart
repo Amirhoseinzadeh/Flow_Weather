@@ -1,69 +1,68 @@
-
-
 import 'package:flow_weather/core/resources/data_state.dart';
-import 'package:flow_weather/features/bookmark_feature/data/data_source/local/city_dao.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/entities/city_model.dart';
+import 'package:flow_weather/features/bookmark_feature/data/data_source/local/city_model.dart';
+import 'package:flow_weather/features/bookmark_feature/data/data_source/local/mappers/city_mapper.dart';
+import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
 import 'package:flow_weather/features/bookmark_feature/domain/repository/city_repository.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-class CityRepositoryImpl extends CityRepository{
-  CityDao cityDao;
-  CityRepositoryImpl(this.cityDao);
+class CityRepositoryImpl extends CityRepository {
+  final Box<CityModel> _cityBox;
 
+  CityRepositoryImpl() : _cityBox = Hive.box<CityModel>('cities');
 
-  /// call save city to DB and set status
   @override
-  Future<DataState<City>> saveCityToDB(String cityName) async{
-    try{
-
-      // check city exist or not
-      City? checkCity = await cityDao.findCityByName(cityName);
-      if(checkCity != null){
-        return DataFailed(cityName + " has Already exist");
-      }
-
-      // insert city to database
-      City city = City(name: cityName);
-      await cityDao.insertCity(city);
+  Future<DataState<City>> saveCityToDB(City city) async {
+    try {
+      final model = toModel(city);
+      await _cityBox.put(model.name, model);
       return DataSuccess(city);
-
-    }catch(e){
-      print(e.toString());
-      return DataFailed(e.toString());
+    } catch (e) {
+      return DataFailed('خطا در ذخیره شهر: $e');
     }
   }
 
-  /// call get All city from DB and set status
   @override
   Future<DataState<List<City>>> getAllCityFromDB() async {
-    try{
-      List<City> cities =  await cityDao.getAllCity();
-      return DataSuccess(cities);
-    }catch(e){
-      return DataFailed(e.toString());
+    try {
+      final models = _cityBox.values.toList();
+      final entities = models.map((model) => toEntity(model)).toList();
+      return DataSuccess(entities);
+    } catch (e) {
+      return DataFailed('خطا در دریافت شهرها: $e');
     }
   }
 
-  /// call  get city by name from DB and set status
   @override
-  Future<DataState<City?>> findCityByName(name) async {
-    try{
-      City? city =  await cityDao.findCityByName(name);
-      return DataSuccess(city);
-    }catch(e){
-      print(e.toString());
-      return DataFailed(e.toString());
+  Future<DataState<City?>> findCityByName(String name) async {
+    try {
+      final model = _cityBox.get(name);
+      if (model == null) {
+        return DataSuccess(null);
+      }
+      return DataSuccess(toEntity(model));
+    } catch (e) {
+      return DataFailed('خطا در جستجوی شهر: $e');
     }
   }
 
   @override
   Future<DataState<String>> deleteCityByName(String name) async {
-    try{
-      await cityDao.deleteCityByName(name);
+    try {
+      await _cityBox.delete(name);
       return DataSuccess(name);
-    }catch(e){
-      print(e.toString());
-      return DataFailed(e.toString());
+    } catch (e) {
+      return DataFailed('خطا در حذف شهر: $e');
     }
   }
 
+  @override
+  Future<DataState<City>> updateCity(City city) async {
+    try {
+      final model = toModel(city);
+      await _cityBox.put(model.name, model);
+      return DataSuccess(city);
+    } catch (e) {
+      return DataFailed('خطا در آپدیت شهر: $e');
+    }
+  }
 }
