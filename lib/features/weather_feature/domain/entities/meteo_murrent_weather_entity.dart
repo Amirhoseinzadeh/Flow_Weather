@@ -40,8 +40,8 @@ class Coord extends Equatable {
 }
 
 class Sys extends Equatable {
-  final int? sunrise;
-  final int? sunset;
+  final String? sunrise; // تغییر به String
+  final String? sunset;  // تغییر به String
 
   Sys({this.sunrise, this.sunset});
 

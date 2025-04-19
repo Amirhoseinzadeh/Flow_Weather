@@ -14,10 +14,12 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     int? windDirection,
     int? weatherCode,
     String? description,
+    String? sunrise,
+    String? sunset,
   }) : super(
     name: name,
     coord: coord,
-    sys: sys,
+    sys: sys ?? Sys(sunrise: sunrise, sunset: sunset),
     timezone: timezone,
     main: Main(
       temp: temperature,
@@ -32,6 +34,34 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
         ? [Weather(id: weatherCode, description: description)]
         : [],
   );
+
+  factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord}) {
+    final currentWeather = json['current_weather'] ?? {};
+    final daily = json['daily'] ?? {};
+    final weatherCode = currentWeather['weathercode'] as int? ?? 0;
+
+    // تبدیل timezone از رشته (مثل "Asia/Tehran") به عدد (offset ثانیه‌ای)
+    final timezoneStr = json['timezone'] as String? ?? 'UTC';
+    final timezoneOffset = _getTimezoneOffset(timezoneStr);
+
+    return MeteoCurrentWeatherModel(
+      name: name ?? json['city_name'] as String?, // استفاده از name ورودی یا مقدار پیش‌فرض
+      coord: coord ?? Coord(
+        lat: json['latitude'] as double?,
+        lon: json['longitude'] as double?,
+      ),
+      temperature: currentWeather['temperature'] as double?,
+      humidity: json['current']?['relativehumidity_2m'] as int?,
+      pressure: json['current']?['pressure_msl'] as double?,
+      windSpeed: currentWeather['windspeed'] as double?,
+      windDirection: currentWeather['winddirection'] as int?,
+      weatherCode: weatherCode,
+      description: _mapWeatherCodeToDescription(weatherCode, 'fa'),
+      timezone: timezoneOffset,
+      sunrise: daily['sunrise']?[0] as String?,
+      sunset: daily['sunset']?[0] as String?,
+    );
+  }
 
   // متد استاتیک برای تبدیل weatherCode به توضیحات
   static String _mapWeatherCodeToDescription(int code, String lang) {
@@ -67,5 +97,14 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     };
 
     return weatherDescriptions[code] ?? 'ناشناخته';
+  }
+
+  // متد برای تبدیل timezone به offset ثانیه‌ای
+  static int _getTimezoneOffset(String timezone) {
+    const timezoneOffsets = {
+      'UTC': 0,
+      'Asia/Tehran': 12600, // +03:30 (3 ساعت و 30 دقیقه = 12600 ثانیه)
+    };
+    return timezoneOffsets[timezone] ?? 0;
   }
 }

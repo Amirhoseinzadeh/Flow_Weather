@@ -53,6 +53,16 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     });
   }
 
+  String _formatTime(String? isoTime) {
+    if (isoTime == null || isoTime.isEmpty) return '--:--';
+    try {
+      final dateTime = DateTime.parse(isoTime);
+      return DateFormat('HH:mm').format(dateTime);
+    } catch (e) {
+      return '--:--';
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -236,7 +246,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                           maxTemp = forecast.days[0].maxTempC;
                         }
                       }
-
+                      final sunrise = _formatTime(city.sys?.sunrise);
+                      final sunset = _formatTime(city.sys?.sunset);
                       return Column(
                         children: [
                           Container(
@@ -284,6 +295,25 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text("رطوبت", style: TextStyle(color: Colors.amber)),
                                         Text("${city.main?.humidity ?? 0}%", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Text("طلوع", style: TextStyle(color: Colors.amber)),
+                                        Text(sunrise, style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("غروب", style: TextStyle(color: Colors.amber)),
+                                        Text(sunset, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                   ],
