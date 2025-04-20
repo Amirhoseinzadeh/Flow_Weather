@@ -23,3 +23,12 @@ class LoadFwEvent extends HomeEvent {
   @override
   List<Object> get props => [forecastParams];
 }
+
+class LoadAirQualityEvent extends HomeEvent {
+  final ForecastParams forecastParams;
+
+  const LoadAirQualityEvent(this.forecastParams);
+
+  @override
+  List<Object> get props => [ forecastParams];
+}

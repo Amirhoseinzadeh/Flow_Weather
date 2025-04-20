@@ -14,6 +14,7 @@ import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmar
 import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
 import 'package:flow_weather/features/weather_feature/data/repository/weather_repositoryimpl.dart';
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/get_air_quality_usecase.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_current_weather_usecase.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_forecast_weather_usecase.dart';
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_suggestion_city_usecase.dart';
@@ -69,10 +70,11 @@ Future<void> setup() async {
     DeleteCityUseCase(locator()),
   );
   locator.registerFactory(() => UpdateCityUseCase(locator()));
+  locator.registerLazySingleton<GetAirQualityUseCase>(() => GetAirQualityUseCase(locator()));
 
   // ۷) Blocs / Cubits
   locator.registerSingleton<HomeBloc>(
-    HomeBloc(locator(), locator()),
+    HomeBloc(locator(), locator(), locator()),
   );
   locator.registerSingleton<BookmarkBloc>(
     BookmarkBloc(locator(), locator(), locator(), locator(), locator()),

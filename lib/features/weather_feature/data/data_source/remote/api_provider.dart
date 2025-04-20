@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/utils/constants.dart';
+import 'package:flow_weather/features/weather_feature/data/models/air_quality_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/meteo_current_weather_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/neshan__city_model.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/air_quality_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart';
 import 'package:intl/intl.dart';
@@ -40,9 +42,39 @@ class ApiProvider {
           )).toList(),
         );
       }
-      throw Exception('خطا در دریافت داده‌های شهر');
+      throw Exception('خطا در دریافت داده‌های شهر: وضعیت ${response.statusCode}');
     } catch (e) {
       throw Exception('خطا در جستجوی شهر: $e');
+    }
+  }
+
+  Future<NeshanCityItem?> getCityByCoordinates(double lat, double lon) async {
+    try {
+      var response = await _dio.get(
+        "https://api.neshan.org/v2/reverse",
+        queryParameters: {
+          'lat': lat,
+          'lng': lon,
+        },
+        options: Options(
+          headers: {
+            'Api-Key': apiKeys,
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        return NeshanCityItem(
+          title: data['city'] ?? data['formatted_address']?.split(',')?.first ?? 'Unknown City',
+          address: data['formatted_address'],
+          location: Location(x: lon, y: lat),
+        );
+      }
+      return null;
+    } catch (e) {
+      print('Error in getCityByCoordinates: $e');
+      return null;
     }
   }
 
@@ -62,16 +94,15 @@ class ApiProvider {
         queryParameters: {
           'latitude': city.location!.y,
           'longitude': city.location!.x,
-          'current_weather': true, // برای گرفتن داده‌های فعلی
-          'daily': 'sunrise,sunset', // برای گرفتن طلوع و غروب
+          'current_weather': true,
+          'daily': 'sunrise,sunset',
           'start_date': today,
           'end_date': today,
-          'timezone': 'Asia/Tehran', // وقت ایران
+          'timezone': 'Asia/Tehran',
         },
       );
 
       if (response.statusCode == 200) {
-        // استفاده از متد fromJson با پارامترهای name و coord
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
           name: city.title,
@@ -88,7 +119,7 @@ class ApiProvider {
           weather: model.weather,
         );
       }
-      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی');
+      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
       throw Exception('خطا در دریافت آب‌وهوای کنونی: $e');
     }
@@ -117,9 +148,28 @@ class ApiProvider {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       }
-      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا');
+      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا: وضعیت ${response.statusCode}');
     } catch (e) {
       throw Exception('خطا در دریافت پیش‌بینی آب‌وهوا: $e');
+    }
+  }
+
+  Future<AirQualityModel> getAirQuality(ForecastParams params) async {
+    try {
+      final response = await _dio.get(
+        'https://air-quality-api.open-meteo.com/v1/air-quality',
+        queryParameters: {
+          'latitude': params.lat,
+          'longitude': params.lon,
+          'current': 'pm10,pm2_5,ozone,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide',
+          'timezone': 'Asia/Tehran',
+        },
+      );
+      print('پاسخ خام API برای مختصات (${params.lat}, ${params.lon}): ${response.data}');
+      return AirQualityModel.fromJson(response.data);
+    } catch (e) {
+      print('خطا در دریافت داده‌های کیفیت هوا: $e');
+      throw Exception('خطا در دریافت داده‌های کیفیت هوا: $e');
     }
   }
 }

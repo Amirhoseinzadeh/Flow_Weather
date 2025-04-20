@@ -1,7 +1,9 @@
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/resources/data_state.dart';
 import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
+import 'package:flow_weather/features/weather_feature/data/models/air_quality_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/forecast_model.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/air_quality_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart';
@@ -44,4 +46,19 @@ class WeatherRepositoryImpl extends WeatherRepository {
       throw Exception("please check your connection...");
     }
   }
+
+  @override
+  Future<DataState<AirQualityEntity>> getAirQuality(ForecastParams params) async {
+    try {
+      AirQualityEntity airQualityEntity = await _apiProvider.getAirQuality(params);
+      return DataSuccess(airQualityEntity);
+    } catch (e) {
+      return DataFailed("خطا در دریافت پیش‌بینی: ${e.toString()}");
+    }
+  }
+
+  // @override
+  // Future<AirQualityEntity> getAirQuality(ForecastParams params) async {
+  //   return await _apiProvider.getAirQuality(params);
+  // }
 }

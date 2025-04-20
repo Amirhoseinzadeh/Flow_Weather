@@ -1,5 +1,3 @@
-
-
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/resources/data_state.dart';
 import 'package:flow_weather/core/usecases/UseCase.dart';
