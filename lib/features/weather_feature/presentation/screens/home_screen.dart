@@ -3,6 +3,7 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/home_eve
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:geolocator/geolocator.dart'; // اضافه کردن پکیج geolocator
 import 'package:intl/intl.dart';
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/widgets/app_background.dart';
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    _homeBloc = locator<HomeBloc>()..add(LoadCwEvent(getInitialCity()));
+    _homeBloc = locator<HomeBloc>();
     _searchController = TextEditingController();
     _searchFocus = FocusNode();
     _searchController.clear();
@@ -53,7 +54,62 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('TextField focus changed: ${_searchFocus.hasFocus}');
     });
 
-    _loadInitialData();
+    // بارگذاری داده‌ها بر اساس لوکیشن کاربر یا شهر پیش‌فرض
+    _loadDataBasedOnLocation();
+  }
+
+  // تابع برای گرفتن لوکیشن کاربر و بارگذاری داده‌ها
+  Future<void> _loadDataBasedOnLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // چک کردن فعال بودن سرویس لوکیشن
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // سرویس لوکیشن غیرفعاله، از شهر پیش‌فرض استفاده کن
+      print('سرویس لوکیشن غیرفعال است، بارگذاری داده‌ها برای شهر پیش‌فرض');
+      _loadInitialData();
+      return;
+    }
+
+    // چک کردن مجوز لوکیشن
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // کاربر مجوز رو رد کرده، از شهر پیش‌فرض استفاده کن
+        print('مجوز لوکیشن رد شد، بارگذاری داده‌ها برای شهر پیش‌فرض');
+        _loadInitialData();
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // کاربر برای همیشه مجوز رو رد کرده، از شهر پیش‌فرض استفاده کن
+      print('مجوز لوکیشن برای همیشه رد شد، بارگذاری داده‌ها برای شهر پیش‌فرض');
+      _loadInitialData();
+      return;
+    }
+
+    // گرفتن لوکیشن کاربر
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      print('لوکیشن کاربر: lat=${position.latitude}, lon=${position.longitude}');
+
+      // بارگذاری داده‌ها با لوکیشن کاربر
+      final params = ForecastParams(position.latitude, position.longitude);
+      _homeBloc.add(LoadCwEvent("موقعیت فعلی")); // برای نمایش نام شهر می‌تونی از reverse geocoding استفاده کنی
+      _homeBloc.add(LoadFwEvent(params));
+      _homeBloc.add(LoadAirQualityEvent(params));
+      _isForecastLoaded = true;
+      _isAirQualityLoaded = true;
+    } catch (e) {
+      print('خطا در گرفتن لوکیشن: $e');
+      // اگه خطایی رخ داد، از شهر پیش‌فرض استفاده کن
+      _loadInitialData();
+    }
   }
 
   Future<void> _loadInitialData() async {
@@ -62,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     final params = ForecastParams(defaultLat, defaultLon);
     print('مختصات اولیه برای آمل: lat=$defaultLat, lon=$defaultLon');
     try {
+      _homeBloc.add(LoadCwEvent(getInitialCity()));
       _homeBloc.add(LoadFwEvent(params));
       _homeBloc.add(LoadAirQualityEvent(params));
       print('Initial forecast and air quality loaded for: ${getInitialCity()}');
@@ -227,6 +284,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                           }
                           return const SizedBox.shrink();
                         },
+                      ),
+                      // اضافه کردن دکمه برای گرفتن لوکیشن دستی
+                      IconButton(
+                        icon: const Icon(Icons.my_location, color: Colors.white),
+                        onPressed: () {
+                          _loadDataBasedOnLocation();
+                        },
+                        tooltip: 'استفاده از موقعیت فعلی',
                       ),
                     ],
                   ),
@@ -409,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                                   decoration: BoxDecoration(
-                                                    color: Colors.blue.shade900  /*aqiColor*/,
+                                                    color: aqiColor,
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Text(
@@ -419,73 +484,73 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              'آلاینده اصلی: ${airQuality.dominantPollutant}',
-                                              style: const TextStyle(color: Colors.white70, fontSize: 16),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Column(
-                                                  children: [
-                                                    const Text("PM2.5", style: TextStyle(color: Colors.amber)),
-                                                    Text("${airQuality.airQualityEntity.pm25.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                  ],
-                                                ),
-                                                Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                                Column(
-                                                  children: [
-                                                    const Text("PM10", style: TextStyle(color: Colors.amber)),
-                                                    Text("${airQuality.airQualityEntity.pm10.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                  ],
-                                                ),
-                                                Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                                Column(
-                                                  children: [
-                                                    const Text("ازون", style: TextStyle(color: Colors.amber)),
-                                                    Text("${airQuality.airQualityEntity.ozone.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            if (airQuality.airQualityEntity.co != null ||
-                                                airQuality.airQualityEntity.no2 != null ||
-                                                airQuality.airQualityEntity.so2 != null) ...[
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  if (airQuality.airQualityEntity.co != null)
-                                                    Column(
-                                                      children: [
-                                                        const Text("CO", style: TextStyle(color: Colors.amber)),
-                                                        Text("${airQuality.airQualityEntity.co!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                      ],
-                                                    ),
-                                                  if (airQuality.airQualityEntity.co != null)
-                                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                                  if (airQuality.airQualityEntity.no2 != null)
-                                                    Column(
-                                                      children: [
-                                                        const Text("NO2", style: TextStyle(color: Colors.amber)),
-                                                        Text("${airQuality.airQualityEntity.no2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                      ],
-                                                    ),
-                                                  if (airQuality.airQualityEntity.no2 != null)
-                                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                                  if (airQuality.airQualityEntity.so2 != null)
-                                                    Column(
-                                                      children: [
-                                                        const Text("SO2", style: TextStyle(color: Colors.amber)),
-                                                        Text("${airQuality.airQualityEntity.so2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                                      ],
-                                                    ),
-                                                ],
-                                              ),
-                                            ],
+                                            // const SizedBox(height: 10),
+                                            // Text(
+                                            //   'آلاینده اصلی: ${airQuality.dominantPollutant}',
+                                            //   style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                            //   textAlign: TextAlign.center,
+                                            // ),
+                                            // const SizedBox(height: 10),
+                                            // Row(
+                                            //   mainAxisAlignment: MainAxisAlignment.center,
+                                            //   children: [
+                                            //     Column(
+                                            //       children: [
+                                            //         const Text("PM2.5", style: TextStyle(color: Colors.amber)),
+                                            //         Text("${airQuality.airQualityEntity.pm25.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //       ],
+                                            //     ),
+                                            //     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                            //     Column(
+                                            //       children: [
+                                            //         const Text("PM10", style: TextStyle(color: Colors.amber)),
+                                            //         Text("${airQuality.airQualityEntity.pm10.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //       ],
+                                            //     ),
+                                            //     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                            //     Column(
+                                            //       children: [
+                                            //         const Text("ازون", style: TextStyle(color: Colors.amber)),
+                                            //         Text("${airQuality.airQualityEntity.ozone.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //       ],
+                                            //     ),
+                                            //   ],
+                                            // ),
+                                            // if (airQuality.airQualityEntity.co != null ||
+                                            //     airQuality.airQualityEntity.no2 != null ||
+                                            //     airQuality.airQualityEntity.so2 != null) ...[
+                                            //   const SizedBox(height: 10),
+                                            //   Row(
+                                            //     mainAxisAlignment: MainAxisAlignment.center,
+                                            //     children: [
+                                            //       if (airQuality.airQualityEntity.co != null)
+                                            //         Column(
+                                            //           children: [
+                                            //             const Text("CO", style: TextStyle(color: Colors.amber)),
+                                            //             Text("${airQuality.airQualityEntity.co!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //           ],
+                                            //         ),
+                                            //       if (airQuality.airQualityEntity.co != null)
+                                            //         Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                            //       if (airQuality.airQualityEntity.no2 != null)
+                                            //         Column(
+                                            //           children: [
+                                            //             const Text("NO2", style: TextStyle(color: Colors.amber)),
+                                            //             Text("${airQuality.airQualityEntity.no2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //           ],
+                                            //         ),
+                                            //       if (airQuality.airQualityEntity.no2 != null)
+                                            //         Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                            //       if (airQuality.airQualityEntity.so2 != null)
+                                            //         Column(
+                                            //           children: [
+                                            //             const Text("SO2", style: TextStyle(color: Colors.amber)),
+                                            //             Text("${airQuality.airQualityEntity.so2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
+                                            //           ],
+                                            //         ),
+                                            //     ],
+                                            //   ),
+                                            // ],
                                           ],
                                         ),
                                       );

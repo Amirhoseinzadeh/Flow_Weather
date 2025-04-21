@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flow_weather/core/utils/load_city_weather.dart';
-import 'package:flow_weather/core/utils/weather_utils.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
