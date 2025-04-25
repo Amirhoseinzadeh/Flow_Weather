@@ -221,10 +221,10 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               return TextField(
                                 controller: controller,
                                 focusNode: focusNode,
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(fontFamily: "nazanin",color: Colors.white),
                                 decoration: const InputDecoration(
                                   hintText: "جستجوی شهر...",
-                                  hintStyle: TextStyle(color: Colors.white70),
+                                  hintStyle: TextStyle(fontFamily: "nazanin",color: Colors.white70),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.white38),
                                   ),
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         child: Center(
                           child: Text(
                             'خطا در بارگذاری هواشناسی: ${(state.cwStatus as CwError).message}',
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(fontFamily: "nazanin",color: Colors.red),
                           ),
                         ),
                       );
@@ -351,45 +351,84 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text(city.name ?? '', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: Colors.white)),
+                                Text(city.name ?? '',maxLines: 1, style: const TextStyle(fontFamily: "titr",fontSize: 30, color: Colors.white)),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
-                                  style: const TextStyle(fontSize: 20, color: Colors.white70),
+                                  style: const TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white70),
                                 ),
                                 const SizedBox(height: 10),
-                                AppBackground.setIconForMain(
-                                  city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
+                                SizedBox(
+                                  height: 70,
+                                  width: 70,
+                                  child: AppBackground.setIconForMain(
+                                    city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
+                                  ),
                                 ),
-                                Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Text("حداقل دما", style: TextStyle(fontFamily: "nazanin",color: Colors.white54,fontSize: 14)),
+                                        Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                    Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white)),
+                                    Column(
+                                      children: [
+                                        const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin",color: Colors.white54,fontSize: 14)),
+                                        Text("${maxTemp.round()}°", style: const TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+
                                 const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("سرعت باد", style: TextStyle(color: Colors.amber)),
+                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
                                         Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                    Column(
-                                      children: [
-                                        const Text("حداقل دما", style: TextStyle(color: Colors.amber)),
-                                        Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
+                                    if (state.aqStatus is AirQualityLoading)
+                                      const SizedBox(
+                                        height: 50,
+                                        child: Center(child: DotLoadingWidget()),
+                                      ),
+                                    if (state.aqStatus is AirQualityError)
+                                      Text(
+                                        'خطا در بارگذاری کیفیت هوا: ${(state.aqStatus as AirQualityError).message}',
+                                        style: const TextStyle(fontFamily: "nazanin",color: Colors.red),
+                                      ),
+                                    if (state.aqStatus is AirQualityCompleted)
+                                      Builder(
+                                        builder: (context) {
+                                          final airQuality = (state.aqStatus as AirQualityCompleted);
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              const Text(
+                                                "کیفیت هوا",
+                                                style: TextStyle(fontFamily: "nazanin",color: Colors.amber),
+                                              ),
+                                              Text(
+                                                'AQI: ${airQuality.aqi} (${airQuality.category})',
+                                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                                              ),
+
+                                            ],
+                                          );
+                                        },
+                                      ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("حداکثر دما", style: TextStyle(color: Colors.amber)),
-                                        Text("${maxTemp.round()}°", style: const TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
-                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                    Column(
-                                      children: [
-                                        const Text("رطوبت", style: TextStyle(color: Colors.amber)),
+                                        const Text("رطوبت", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
                                         Text("${city.main?.humidity ?? 0}%", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -401,166 +440,23 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("طلوع", style: TextStyle(color: Colors.amber)),
+                                        const Text("طلوع", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
                                         Text(sunrise, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("غروب", style: TextStyle(color: Colors.amber)),
+                                        const Text("غروب", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
                                         Text(sunset, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 10),
-                                if (state.aqStatus is AirQualityLoading)
-                                  const SizedBox(
-                                    height: 50,
-                                    child: Center(child: DotLoadingWidget()),
-                                  ),
-                                if (state.aqStatus is AirQualityError)
-                                  Text(
-                                    'خطا در بارگذاری کیفیت هوا: ${(state.aqStatus as AirQualityError).message}',
-                                    style: const TextStyle(color: Colors.red),
-                                  ),
-                                if (state.aqStatus is AirQualityCompleted)
-                                  Builder(
-                                    builder: (context) {
-                                      final airQuality = (state.aqStatus as AirQualityCompleted);
-                                      Color aqiColor;
-                                      switch (airQuality.category) {
-                                        case 'خوب':
-                                          aqiColor = Colors.green;
-                                          break;
-                                        case 'متوسط':
-                                          aqiColor = Colors.yellow;
-                                          break;
-                                        case 'ناسالم برای گروه‌های حساس':
-                                          aqiColor = Colors.orange;
-                                          break;
-                                        case 'ناسالم':
-                                          aqiColor = Colors.red;
-                                          break;
-                                        case 'خیلی ناسالم':
-                                          aqiColor = Colors.purple;
-                                          break;
-                                        case 'خطرناک':
-                                          aqiColor = Colors.brown;
-                                          break;
-                                        default:
-                                          aqiColor = Colors.grey;
-                                      }
-
-                                      return Container(
-                                        margin: const EdgeInsets.symmetric(vertical: 6),
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.withOpacity(.1),
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "کیفیت هوا",
-                                              style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                  decoration: BoxDecoration(
-                                                    color: aqiColor,
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Text(
-                                                    'AQI: ${airQuality.aqi} (${airQuality.category})',
-                                                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            // const SizedBox(height: 10),
-                                            // Text(
-                                            //   'آلاینده اصلی: ${airQuality.dominantPollutant}',
-                                            //   style: const TextStyle(color: Colors.white70, fontSize: 16),
-                                            //   textAlign: TextAlign.center,
-                                            // ),
-                                            // const SizedBox(height: 10),
-                                            // Row(
-                                            //   mainAxisAlignment: MainAxisAlignment.center,
-                                            //   children: [
-                                            //     Column(
-                                            //       children: [
-                                            //         const Text("PM2.5", style: TextStyle(color: Colors.amber)),
-                                            //         Text("${airQuality.airQualityEntity.pm25.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //       ],
-                                            //     ),
-                                            //     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                            //     Column(
-                                            //       children: [
-                                            //         const Text("PM10", style: TextStyle(color: Colors.amber)),
-                                            //         Text("${airQuality.airQualityEntity.pm10.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //       ],
-                                            //     ),
-                                            //     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                            //     Column(
-                                            //       children: [
-                                            //         const Text("ازون", style: TextStyle(color: Colors.amber)),
-                                            //         Text("${airQuality.airQualityEntity.ozone.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //       ],
-                                            //     ),
-                                            //   ],
-                                            // ),
-                                            // if (airQuality.airQualityEntity.co != null ||
-                                            //     airQuality.airQualityEntity.no2 != null ||
-                                            //     airQuality.airQualityEntity.so2 != null) ...[
-                                            //   const SizedBox(height: 10),
-                                            //   Row(
-                                            //     mainAxisAlignment: MainAxisAlignment.center,
-                                            //     children: [
-                                            //       if (airQuality.airQualityEntity.co != null)
-                                            //         Column(
-                                            //           children: [
-                                            //             const Text("CO", style: TextStyle(color: Colors.amber)),
-                                            //             Text("${airQuality.airQualityEntity.co!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //           ],
-                                            //         ),
-                                            //       if (airQuality.airQualityEntity.co != null)
-                                            //         Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                            //       if (airQuality.airQualityEntity.no2 != null)
-                                            //         Column(
-                                            //           children: [
-                                            //             const Text("NO2", style: TextStyle(color: Colors.amber)),
-                                            //             Text("${airQuality.airQualityEntity.no2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //           ],
-                                            //         ),
-                                            //       if (airQuality.airQualityEntity.no2 != null)
-                                            //         Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                                            //       if (airQuality.airQualityEntity.so2 != null)
-                                            //         Column(
-                                            //           children: [
-                                            //             const Text("SO2", style: TextStyle(color: Colors.amber)),
-                                            //             Text("${airQuality.airQualityEntity.so2!.toStringAsFixed(1)} µg/m³", style: const TextStyle(color: Colors.white)),
-                                            //           ],
-                                            //         ),
-                                            //     ],
-                                            //   ),
-                                            // ],
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
-                          const Divider(color: Colors.white12, thickness: 1),
+                          const Divider(color: Colors.white12, thickness: 2),
                           BlocBuilder<HomeBloc, HomeState>(
                             buildWhen: (p, c) => p.fwStatus != c.fwStatus,
                             builder: (context, s2) {
@@ -569,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               }
                               if (s2.fwStatus is FwError) {
                                 return const Center(
-                                  child: Text("خطا در بارگذاری پیش‌بینی", style: TextStyle(color: Colors.red)),
+                                  child: Text("خطا در بارگذاری پیش‌بینی", style: TextStyle(fontFamily: "nazanin",color: Colors.red)),
                                 );
                               }
                               final forecast = (s2.fwStatus as FwCompleted).forecastEntity;
@@ -587,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text(
                                           "پیش‌بینی ساعتی",
-                                          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         const SizedBox(height: 10),
                                         SizedBox(
@@ -599,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               final h = forecast.hours[i];
                                               final lbl = DateFormat('HH:mm').format(DateTime.parse(h.time));
                                               return Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
@@ -607,14 +503,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                       i == 0 ? "اکنون" : lbl,
                                                       style: const TextStyle(color: Colors.white70),
                                                     ),
-                                                    const SizedBox(height: 6),
+                                                    const SizedBox(height: 2),
                                                     Image.asset(
                                                       h.conditionIcon,
-                                                      width: 40,
-                                                      height: 40,
+                                                      width: 30,
+                                                      height: 30,
                                                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
                                                     ),
-                                                    const SizedBox(height: 4),
+                                                    const SizedBox(height: 2),
                                                     Text(
                                                       '${h.temperature.round()}°',
                                                       style: const TextStyle(color: Colors.white),
@@ -628,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       ],
                                     ),
                                   ),
-                                  const Divider(color: Colors.white12, thickness: 1),
+                                  const Divider(color: Colors.white12, thickness: 2),
                                   Container(
                                     margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                                     padding: const EdgeInsets.all(16),
@@ -641,7 +537,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text(
                                           "پیش‌بینی ۱۴ روزه",
-                                          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         const SizedBox(height: 10),
                                         ForecastNextDaysWidget(forecastDays: forecast.days),
