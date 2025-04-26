@@ -368,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
-                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Container(color: Colors.white24, height: 31, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     if (state.aqStatus is AirQualityLoading)
                                       const SizedBox(
                                         height: 50,
