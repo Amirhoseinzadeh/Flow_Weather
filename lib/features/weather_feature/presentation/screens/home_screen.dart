@@ -1,9 +1,9 @@
+import 'package:flow_weather/config/notification_service.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:geolocator/geolocator.dart'; // اضافه کردن پکیج geolocator
 import 'package:intl/intl.dart';
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/widgets/app_background.dart';
@@ -21,21 +21,22 @@ import 'package:flow_weather/features/weather_feature/presentation/widgets/forec
 import 'package:flow_weather/locator.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final NotificationService notificationService;
+
+  const HomeScreen({super.key, required this.notificationService});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
-  String getInitialCity() {
-    return "آمل";
-  }
+  String getInitialCity() => "آمل";
 
   late TextEditingController _searchController;
   late FocusNode _searchFocus;
   bool _isForecastLoaded = false;
   bool _isAirQualityLoaded = false;
+  bool _isLoadingLocation = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final HomeBloc _homeBloc;
@@ -54,78 +55,23 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('TextField focus changed: ${_searchFocus.hasFocus}');
     });
 
-    // بارگذاری داده‌ها بر اساس لوکیشن کاربر یا شهر پیش‌فرض
-    _loadDataBasedOnLocation();
-  }
-
-  // تابع برای گرفتن لوکیشن کاربر و بارگذاری داده‌ها
-  Future<void> _loadDataBasedOnLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // چک کردن فعال بودن سرویس لوکیشن
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // سرویس لوکیشن غیرفعاله، از شهر پیش‌فرض استفاده کن
-      print('سرویس لوکیشن غیرفعال است، بارگذاری داده‌ها برای شهر پیش‌فرض');
-      _loadInitialData();
-      return;
-    }
-
-    // چک کردن مجوز لوکیشن
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // کاربر مجوز رو رد کرده، از شهر پیش‌فرض استفاده کن
-        print('مجوز لوکیشن رد شد، بارگذاری داده‌ها برای شهر پیش‌فرض');
-        _loadInitialData();
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // کاربر برای همیشه مجوز رو رد کرده، از شهر پیش‌فرض استفاده کن
-      print('مجوز لوکیشن برای همیشه رد شد، بارگذاری داده‌ها برای شهر پیش‌فرض');
-      _loadInitialData();
-      return;
-    }
-
-    // گرفتن لوکیشن کاربر
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      print('لوکیشن کاربر: lat=${position.latitude}, lon=${position.longitude}');
-
-      // بارگذاری داده‌ها با لوکیشن کاربر
-      final params = ForecastParams(position.latitude, position.longitude);
-      _homeBloc.add(LoadCwEvent("موقعیت فعلی")); // برای نمایش نام شهر می‌تونی از reverse geocoding استفاده کنی
-      _homeBloc.add(LoadFwEvent(params));
-      _homeBloc.add(LoadAirQualityEvent(params));
-      _isForecastLoaded = true;
-      _isAirQualityLoaded = true;
-    } catch (e) {
-      print('خطا در گرفتن لوکیشن: $e');
-      // اگه خطایی رخ داد، از شهر پیش‌فرض استفاده کن
-      _loadInitialData();
-    }
+    _loadInitialData();
   }
 
   Future<void> _loadInitialData() async {
-    double defaultLat = 36.4696;
-    double defaultLon = 52.3507;
+    double defaultLat = 35.6892; // تهران
+    double defaultLon = 51.3890;
     final params = ForecastParams(defaultLat, defaultLon);
-    print('مختصات اولیه برای آمل: lat=$defaultLat, lon=$defaultLon');
+    print('مختصات اولیه برای تهران: lat=$defaultLat, lon=$defaultLon');
     try {
-      _homeBloc.add(LoadCwEvent(getInitialCity()));
+      _homeBloc.add(LoadCwEvent("تهران"));
       _homeBloc.add(LoadFwEvent(params));
       _homeBloc.add(LoadAirQualityEvent(params));
-      print('Initial forecast and air quality loaded for: ${getInitialCity()}');
+      print('Initial forecast and air quality loaded for: تهران');
     } catch (e) {
       print('Error loading initial data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطا در بارگذاری داده‌ها')),
+        const SnackBar(content: Text('خطا در بارگذاری داده‌ها')),
       );
     }
   }
@@ -153,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     super.build(context);
     final now = DateTime.now();
     final hourStr = DateFormat('kk').format(now);
-    final bgImage = AppBackground.getBackGroundImage(hourStr);
 
     return MultiBlocProvider(
       providers: [
@@ -163,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       child: Scaffold(
         key: _scaffoldKey,
         drawer: Drawer(
+          backgroundColor: Colors.black,
           child: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -213,18 +159,18 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             itemBuilder: (context, NeshanCityItem model) {
                               return ListTile(
                                 leading: const Icon(Icons.location_on),
-                                title: Text(model.title ?? ''),
-                                subtitle: Text('${model.address?.split(', ')[0] ?? ''}, ${model.address?.split(', ').last ?? ''}'),
+                                title: Text(model.title ?? '', style: const TextStyle(fontSize: 16), maxLines: 1),
+                                subtitle: Text('${model.address?.split(', ')[0] ?? ''}, ${model.address?.split(', ').last ?? ''}', style: const TextStyle(fontSize: 12), maxLines: 2),
                               );
                             },
                             builder: (context, TextEditingController controller, FocusNode focusNode) {
                               return TextField(
                                 controller: controller,
                                 focusNode: focusNode,
-                                style: const TextStyle(fontFamily: "nazanin",color: Colors.white),
+                                style: const TextStyle(fontFamily: "nazanin", color: Colors.white),
                                 decoration: const InputDecoration(
                                   hintText: "جستجوی شهر...",
-                                  hintStyle: TextStyle(fontFamily: "nazanin",color: Colors.white70),
+                                  hintStyle: TextStyle(fontFamily: "nazanin", color: Colors.white70),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.white38),
                                   ),
@@ -285,11 +231,20 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                           return const SizedBox.shrink();
                         },
                       ),
-                      // اضافه کردن دکمه برای گرفتن لوکیشن دستی
                       IconButton(
-                        icon: const Icon(Icons.my_location, color: Colors.white),
-                        onPressed: () {
-                          _loadDataBasedOnLocation();
+                        icon: _isLoadingLocation
+                            ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                            : const Icon(Icons.my_location, color: Colors.white),
+                        onPressed: _isLoadingLocation
+                            ? null
+                            : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('فعلاً لوکیشن غیرفعال است')),
+                          );
                         },
                         tooltip: 'استفاده از موقعیت فعلی',
                       ),
@@ -311,13 +266,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         child: Center(
                           child: Text(
                             'خطا در بارگذاری هواشناسی: ${(state.cwStatus as CwError).message}',
-                            style: const TextStyle(fontFamily: "nazanin",color: Colors.red),
+                            style: const TextStyle(fontFamily: "nazanin", color: Colors.red),
                           ),
                         ),
                       );
                     }
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
+                      final temp = city.main?.temp?.round() ?? 0;
+                      final cityName = city.name ?? 'شهر نامشخص';
+
+                      // نمایش نوتیفیکیشن
+                      widget.notificationService.showNotification(
+                        id: 0,
+                        title: 'وضعیت آب‌وهوا',
+                        body: 'دمای $cityName: $temp°',
+                        payload: 'weather_update',
+                      );
+
                       if (!_isForecastLoaded) {
                         final lat = city.coord?.lat;
                         final lon = city.coord?.lon;
@@ -331,6 +297,15 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         } else {
                           print('مختصات آب‌وهوای فعلی نامعتبر است');
                         }
+                      }
+
+                      if (temp != null && temp > 30) {
+                        widget.notificationService.showNotification(
+                          id: 1, // ID متفاوت برای هشدار گرما
+                          title: 'هشدار گرما',
+                          body: 'دمای ${city.name} به ${temp.round()}° رسید. مراقب باشید!',
+                          payload: 'high_temp',
+                        );
                       }
 
                       double minTemp = 0.0;
@@ -351,11 +326,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text(city.name ?? '',maxLines: 1, style: const TextStyle(fontFamily: "titr",fontSize: 30, color: Colors.white)),
+                                Text(city.name ?? '', maxLines: 1, style: const TextStyle(fontFamily: "titr", fontSize: 30, color: Colors.white)),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
-                                  style: const TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white70),
+                                  style: const TextStyle(fontFamily: "nazanin", fontSize: 20, color: Colors.white70),
                                 ),
                                 const SizedBox(height: 10),
                                 SizedBox(
@@ -370,27 +345,26 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("حداقل دما", style: TextStyle(fontFamily: "nazanin",color: Colors.white54,fontSize: 14)),
-                                        Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.w600)),
+                                        const Text("حداقل دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14)),
+                                        Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                     Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white)),
                                     Column(
                                       children: [
-                                        const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin",color: Colors.white54,fontSize: 14)),
-                                        Text("${maxTemp.round()}°", style: const TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.w600)),
+                                        const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14)),
+                                        Text("${maxTemp.round()}°", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                   ],
                                 ),
-
                                 const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
+                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nazanin", color: Colors.amber)),
                                         Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -403,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     if (state.aqStatus is AirQualityError)
                                       Text(
                                         'خطا در بارگذاری کیفیت هوا: ${(state.aqStatus as AirQualityError).message}',
-                                        style: const TextStyle(fontFamily: "nazanin",color: Colors.red),
+                                        style: const TextStyle(fontFamily: "nazanin", color: Colors.red),
                                       ),
                                     if (state.aqStatus is AirQualityCompleted)
                                       Builder(
@@ -414,13 +388,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                             children: [
                                               const Text(
                                                 "کیفیت هوا",
-                                                style: TextStyle(fontFamily: "nazanin",color: Colors.amber),
+                                                style: TextStyle(fontFamily: "nazanin", color: Colors.amber),
                                               ),
                                               Text(
                                                 'AQI: ${airQuality.aqi} (${airQuality.category})',
                                                 style: const TextStyle(color: Colors.white, fontSize: 12),
                                               ),
-
                                             ],
                                           );
                                         },
@@ -428,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("رطوبت", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
+                                        const Text("رطوبت", style: TextStyle(fontFamily: "nazanin", color: Colors.amber)),
                                         Text("${city.main?.humidity ?? 0}%", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -440,14 +413,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("طلوع", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
+                                        const Text("طلوع", style: TextStyle(fontFamily: "nazanin", color: Colors.amber)),
                                         Text(sunrise, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("غروب", style: TextStyle(fontFamily: "nazanin",color: Colors.amber)),
+                                        const Text("غروب", style: TextStyle(fontFamily: "nazanin", color: Colors.amber)),
                                         Text(sunset, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -465,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               }
                               if (s2.fwStatus is FwError) {
                                 return const Center(
-                                  child: Text("خطا در بارگذاری پیش‌بینی", style: TextStyle(fontFamily: "nazanin",color: Colors.red)),
+                                  child: Text("خطا در بارگذاری پیش‌بینی", style: TextStyle(fontFamily: "nazanin", color: Colors.red)),
                                 );
                               }
                               final forecast = (s2.fwStatus as FwCompleted).forecastEntity;
@@ -483,13 +456,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text(
                                           "پیش‌بینی ساعتی",
-                                          style: TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontFamily: "nazanin", fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         const SizedBox(height: 10),
                                         SizedBox(
                                           height: 100,
                                           child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
+                                            cacheExtent: 1000,
                                             itemCount: forecast.hours.length,
                                             itemBuilder: (ctx, i) {
                                               final h = forecast.hours[i];
@@ -537,7 +511,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text(
                                           "پیش‌بینی ۱۴ روزه",
-                                          style: TextStyle(fontFamily: "nazanin",fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontFamily: "nazanin", fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         const SizedBox(height: 10),
                                         ForecastNextDaysWidget(forecastDays: forecast.days),
