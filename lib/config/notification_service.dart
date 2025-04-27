@@ -1,21 +1,11 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shamsi_date/shamsi_date.dart'; // اضافه کردن کتابخونه تاریخ شمسی
+import 'package:shamsi_date/shamsi_date.dart'; // برای تاریخ شمسی
 import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
-
-  final AndroidInitializationSettings _androidInitializationSettings =
-  const AndroidInitializationSettings('notification_icon'); // آیکون باید وجود داشته باشه
-
-  final DarwinInitializationSettings _darwinInitializationSettings =
-  const DarwinInitializationSettings(
-    requestSoundPermission: false,
-    requestBadgePermission: false,
-    requestAlertPermission: true,
-  );
 
   Future<void> initialize() async {
     try {
@@ -28,10 +18,25 @@ class NotificationService {
         print('اجازه نوتیفیکیشن قبلاً داده شده: ${await Permission.notification.status}');
       }
 
+      // گرفتن روز فعلی برای تنظیم آیکون اولیه
+      final jalaliDate = Jalali.now();
+      final day = jalaliDate.day;
+      final iconName = 'day_$day'; // مثلاً day_7
+
+      final AndroidInitializationSettings androidInitializationSettings =
+      AndroidInitializationSettings(iconName);
+
+      const DarwinInitializationSettings darwinInitializationSettings =
+      DarwinInitializationSettings(
+        requestSoundPermission: false,
+        requestBadgePermission: false,
+        requestAlertPermission: true,
+      );
+
       final InitializationSettings initializationSettings =
       InitializationSettings(
-        android: _androidInitializationSettings,
-        iOS: _darwinInitializationSettings,
+        android: androidInitializationSettings,
+        iOS: darwinInitializationSettings,
       );
 
       await _flutterLocalNotificationsPlugin.initialize(
@@ -45,40 +50,40 @@ class NotificationService {
 
   Future<void> showNotification({
     required int id,
+    required String title, // اضافه کردن پارامتر title
     required String body,
-    String? payload, required String title,
+    String? payload,
   }) async {
     // گرفتن تاریخ شمسی کنونی
     final jalaliDate = Jalali.now();
-    final formattedDate = '${jalaliDate.day} / ${jalaliDate.month} / ${jalaliDate.year}';
+    final day = jalaliDate.day; // مثلاً 7
+    final iconName = 'day_$day'; // مثلاً day_7
 
-    // تنظیم عنوان نوتیفیکیشن با تاریخ شمسی
-    final notificationTitle = 'امروز: $formattedDate';
+    // لاگ برای دیباگ
+    print('نمایش نوتیفیکیشن با عنوان: $title و متن: $body');
 
-    print('نمایش نوتیفیکیشن با عنوان: $notificationTitle و متن: $body');
-
-    const AndroidNotificationDetails androidDetails =
-    AndroidNotificationDetails(
+    // تنظیمات نوتیفیکیشن برای اندروید
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'weather_channel',
       'Weather Notifications',
       channelDescription: 'نوتیفیکیشن‌های آب‌وهوا',
       importance: Importance.max,
       priority: Priority.high,
-      ongoing: true, // نوتیفیکیشن همیشه نمایش داده می‌شه
-      autoCancel: false, // کاربر نمی‌تونه حذفش کنه
-      icon: 'notification_icon', // آیکون باید توی drawable باشه
+      ongoing: true,
+      autoCancel: false,
+      icon: iconName, // آیکون پویا بر اساس روز
     );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
 
-    const NotificationDetails platformDetails = NotificationDetails(
+    final NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
 
     await _flutterLocalNotificationsPlugin.show(
       id,
-      notificationTitle, // تاریخ شمسی توی عنوان
+      title, // استفاده از پارامتر title
       body,
       platformDetails,
       payload: payload,
