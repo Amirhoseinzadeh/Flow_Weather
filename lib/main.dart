@@ -1,4 +1,4 @@
-import 'package:flow_weather/config/notification_service.dart';
+import 'package:flow_weather/config/notification/notification_service.dart';
 import 'package:flow_weather/core/bloc/bottom_icon_cubit.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_icon_cubit.dart';
@@ -10,18 +10,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final notificationService = NotificationService();
-  await notificationService.initialize();
+  // final notificationService = NotificationService();
+  // await notificationService.initialize();
 
 
   await setup();
 
-  runApp(MyApp(notificationService: notificationService));
+  runApp(MyApp(/*notificationService: notificationService*/));
 }
 
 class MyApp extends StatelessWidget {
-  final NotificationService notificationService;
-  const MyApp({super.key, required this.notificationService});
+  // final NotificationService notificationService;
+  const MyApp({super.key/*, required this.notificationService*/});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (_) => locator<BookmarkBloc>()),
           BlocProvider(create: (_) => locator<BookmarkIconCubit>()),
         ],
-        child: HomeScreen(notificationService: notificationService),
+        child: HomeScreen(/*notificationService: notificationService*/),
       ),
     );
   }

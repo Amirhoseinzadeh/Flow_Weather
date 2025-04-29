@@ -1,4 +1,4 @@
-import 'package:flow_weather/config/notification_service.dart';
+import 'package:flow_weather/config/notification/notification_service.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +21,9 @@ import 'package:flow_weather/features/weather_feature/presentation/widgets/forec
 import 'package:flow_weather/locator.dart';
 
 class HomeScreen extends StatefulWidget {
-  final NotificationService notificationService;
+  // final NotificationService notificationService;
 
-  const HomeScreen({super.key, required this.notificationService});
+  const HomeScreen({super.key/*, required this.notificationService*/});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -43,6 +43,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   final _bookmarkBloc = locator<BookmarkBloc>();
   final _suggestionUseCase = locator<GetSuggestionCityUseCase>();
 
+  // متغیرهایی برای ذخیره آخرین شهر و مختصات
+  String _currentCity = 'تهران';
+  double _currentLat = 35.6892;
+  double _currentLon = 51.3890;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +61,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     });
 
     _loadInitialData();
+    // شروع به‌روزرسانی دوره‌ای برای شهر پیش‌فرض
+    // widget.notificationService.startPeriodicUpdate(
+    //   _currentCity,
+    //   _currentLat,
+    //   _currentLon,
+    // );
   }
 
   Future<void> _loadInitialData() async {
@@ -88,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   @override
   void dispose() {
+    // widget.notificationService.stopPeriodicUpdate(); // توقف به‌روزرسانی دوره‌ای
     _searchController.dispose();
     _searchFocus.dispose();
     _homeBloc.close();
@@ -195,12 +207,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               final lon = model.location?.x;
                               print('مختصات شهر انتخاب‌شده (${model.title}): lat=$lat, lon=$lon');
                               if (lat != null && lon != null) {
+                                // setState(() {
+                                //   _currentCity = model.title!;
+                                //   _currentLat = lat;
+                                //   _currentLon = lon;
+                                // });
                                 final params = ForecastParams(lat, lon);
                                 context.read<HomeBloc>().add(LoadCwEvent(model.title!));
                                 context.read<HomeBloc>().add(LoadFwEvent(params));
                                 context.read<HomeBloc>().add(LoadAirQualityEvent(params));
                                 _isForecastLoaded = false;
                                 _isAirQualityLoaded = false;
+                                // await widget.notificationService.resetNotificationStatus(0);
+                                // // شروع به‌روزرسانی دوره‌ای برای شهر جدید
+                                // widget.notificationService.startPeriodicUpdate(
+                                //   model.title!,
+                                //   lat,
+                                //   lon,
+                                // );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('مختصات شهر پیدا نشد')),
@@ -276,13 +300,13 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       final temp = city.main?.temp?.round() ?? 0;
                       final cityName = city.name ?? 'شهر نامشخص';
 
-                      // نمایش نوتیفیکیشن
-                      widget.notificationService.showNotification(
-                        id: 0,
-                        title: 'وضعیت آب‌وهوا',
-                        body: 'دمای $cityName: $temp°',
-                        payload: 'weather_update',
-                      );
+                      // ثبت نوتیفیکیشن توی نوتیفیکیشن سنتر
+                      // widget.notificationService.showNotification(
+                      //   id: 0,
+                      //   title: 'وضعیت آب‌وهوا',
+                      //   body: 'دمای $cityName: $temp°',
+                      //   payload: 'weather_update',
+                      // );
 
                       if (!_isForecastLoaded) {
                         final lat = city.coord?.lat;
@@ -297,15 +321,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         } else {
                           print('مختصات آب‌وهوای فعلی نامعتبر است');
                         }
-                      }
-
-                      if (temp != null && temp > 30) {
-                        widget.notificationService.showNotification(
-                          id: 1, // ID متفاوت برای هشدار گرما
-                          title: 'هشدار گرما',
-                          body: 'دمای ${city.name} به ${temp.round()}° رسید. مراقب باشید!',
-                          payload: 'high_temp',
-                        );
                       }
 
                       double minTemp = 0.0;
@@ -326,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text(city.name ?? '', maxLines: 1, style: const TextStyle(fontFamily: "titr", fontSize: 30, color: Colors.white)),
+                                Text(city.name ?? '', maxLines: 1, style: const TextStyle(fontFamily: "nazanin", fontSize: 30, color: Colors.white,fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',

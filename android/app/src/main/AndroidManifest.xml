@@ -2,10 +2,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+<!--    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>-->
+<!--    <uses-permission android:name="android.permission.VIBRATE"/>-->
+<!--    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>-->
+<!--    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>-->
 
     <application
         android:label="flow_weather"
@@ -34,13 +34,13 @@
             </intent-filter>
         </activity>
         <!-- برای مدیریت نوتیفیکیشن‌ها بعد از بوت دستگاه -->
-        <receiver
-            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
+<!--        <receiver-->
+<!--            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.BOOT_COMPLETED"/>-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
