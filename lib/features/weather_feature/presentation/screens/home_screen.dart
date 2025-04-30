@@ -61,23 +61,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('TextField focus changed: ${_searchFocus.hasFocus}');
     });
 
-    _loadInitialData();
+    // بارگذاری لوکیشن هنگام ورود
+    _getCurrentLocation();
   }
 
-  Future<void> _loadInitialData() async {
+  Future<void> _loadDefaultData() async {
     double defaultLat = 35.6892; // تهران
     double defaultLon = 51.3890;
     final params = ForecastParams(defaultLat, defaultLon);
-    print('مختصات اولیه برای تهران: lat=$defaultLat, lon=$defaultLon');
+    print('بارگذاری داده‌های پیش‌فرض برای تهران: lat=$defaultLat, lon=$defaultLon');
     try {
       _homeBloc.add(LoadCwEvent("تهران"));
       _homeBloc.add(LoadFwEvent(params));
       _homeBloc.add(LoadAirQualityEvent(params));
-      print('Initial forecast and air quality loaded for: تهران');
+      print('داده‌های پیش‌فرض برای تهران بارگذاری شد');
     } catch (e) {
-      print('Error loading initial data: $e');
+      print('خطا در بارگذاری داده‌های پیش‌فرض: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('خطا در بارگذاری داده‌ها')),
+        const SnackBar(content: Text('خطا در بارگذاری داده‌های پیش‌فرض')),
       );
     }
   }
@@ -94,8 +95,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       if (!serviceEnabled) {
         print('سرویس موقعیت‌یابی غیرفعال است');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('لطفاً سرویس موقعیت‌یابی را فعال کنید')),
+          const SnackBar(content: Text('سرویس موقعیت‌یابی غیرفعال است. بارگذاری داده‌ها برای تهران')),
         );
+        await _loadDefaultData();
         return;
       }
 
@@ -107,17 +109,19 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         if (permission == LocationPermission.denied) {
           print('کاربر مجوز موقعیت‌یابی را رد کرد');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('لطفاً مجوز دسترسی به موقعیت مکانی را فعال کنید')),
+            const SnackBar(content: Text('مجوز دسترسی به موقعیت مکانی رد شد. بارگذاری داده‌ها برای تهران')),
           );
+          await _loadDefaultData();
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        print('مجوز موقعیت‌یابی به‌طور دائم رد شده است');
+        // print('مجوز موقعیت‌یابی به‌طور دائم رد شده است');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('مجوز موقعیت مکانی به‌طور دائم رد شده است. لطفاً از تنظیمات فعال کنید')),
+          const SnackBar(content: Text('شهر موردنظر را سرچ کنید')),
         );
+        await _loadDefaultData();
         return;
       }
 
@@ -156,8 +160,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('خطا در گرفتن موقعیت مکانی: $e');
       print('StackTrace: $stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطا در گرفتن موقعیت مکانی: $e')),
+        SnackBar(content: Text('خطا در گرفتن موقعیت مکانی: $e. بارگذاری داده‌ها برای تهران')),
       );
+      await _loadDefaultData();
     } finally {
       print('اتمام فرآیند لودینگ موقعیت مکانی');
       setState(() {
