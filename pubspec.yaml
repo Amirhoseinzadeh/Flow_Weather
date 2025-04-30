@@ -93,15 +93,29 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: titr
-      fonts:
-        - asset: assets/fonts/titr.ttf
-
     - family: nazanin
       fonts:
         - asset: assets/fonts/nazanin.ttf
 
+    - family: fedra
+      fonts:
+        - asset: assets/fonts/fedra.ttf
 
+    - family: lalezar
+      fonts:
+        - asset: assets/fonts/lalezar1.ttf
+
+    - family: Titr
+      fonts:
+        - asset: assets/fonts/Titr.ttf
+
+    - family: nikoo
+      fonts:
+        - asset: assets/fonts/nikoo.ttf
+
+    - family: entezar
+      fonts:
+        - asset: assets/fonts/entezar.ttf
 
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
