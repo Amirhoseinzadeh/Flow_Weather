@@ -3,12 +3,20 @@ import 'package:flow_weather/core/usecases/UseCase.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
 
-class GetCurrentWeatherUseCase implements UseCase<DataState<MeteoCurrentWeatherEntity>, String> {
+class GetCurrentWeatherUseCase implements UseCase<DataState<MeteoCurrentWeatherEntity>, Map<String, dynamic>> {
   final WeatherRepository _weatherRepository;
   GetCurrentWeatherUseCase(this._weatherRepository);
 
   @override
-  Future<DataState<MeteoCurrentWeatherEntity>> call(String params) {
-    return _weatherRepository.fetchCurrentWeatherData(params);
+  Future<DataState<MeteoCurrentWeatherEntity>> call(Map<String, dynamic> params) {
+    final cityName = params['cityName'] as String;
+    final lat = params['lat'] as double?;
+    final lon = params['lon'] as double?;
+
+    if (lat != null && lon != null) {
+      return _weatherRepository.getCurrentWeatherByCoordinates(lat, lon);
+    } else {
+      return _weatherRepository.fetchCurrentWeatherData(cityName);
+    }
   }
 }

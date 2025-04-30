@@ -43,8 +43,9 @@ dependencies:
   flutter_typeahead: ^5.2.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  location: ^8.0.0
+  geolocator: ^10.1.0
   geocoding: ^3.0.0
+
 #  flutter_local_notifications: ^19.1.0
 #  permission_handler: ^12.0.0+1
 #  timezone: ^0.10.0

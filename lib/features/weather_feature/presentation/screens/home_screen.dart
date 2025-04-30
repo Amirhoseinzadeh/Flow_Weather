@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flow_weather/config/notification/notification_service.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
+import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +12,7 @@ import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/widgets/app_background.dart';
 import 'package:flow_weather/core/widgets/dot_loading_widget.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
-import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart' as neshan;
 import 'package:flow_weather/features/weather_feature/domain/use_cases/get_suggestion_city_usecase.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/cw_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/fw_status.dart';
@@ -19,11 +22,10 @@ import 'package:flow_weather/features/weather_feature/presentation/widgets/bookm
 import 'package:flow_weather/features/weather_feature/presentation/widgets/bookmark_icon.dart';
 import 'package:flow_weather/features/weather_feature/presentation/widgets/forecast_next_days_widget.dart';
 import 'package:flow_weather/locator.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
-  // final NotificationService notificationService;
-
-  const HomeScreen({super.key/*, required this.notificationService*/});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -43,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   final _bookmarkBloc = locator<BookmarkBloc>();
   final _suggestionUseCase = locator<GetSuggestionCityUseCase>();
 
-  // متغیرهایی برای ذخیره آخرین شهر و مختصات
   String _currentCity = 'تهران';
   double _currentLat = 35.6892;
   double _currentLon = 51.3890;
@@ -61,12 +62,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     });
 
     _loadInitialData();
-    // شروع به‌روزرسانی دوره‌ای برای شهر پیش‌فرض
-    // widget.notificationService.startPeriodicUpdate(
-    //   _currentCity,
-    //   _currentLat,
-    //   _currentLon,
-    // );
   }
 
   Future<void> _loadInitialData() async {
@@ -87,6 +82,90 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     }
   }
 
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      // 1. چک کردن فعال بودن سرویس موقعیت‌یابی
+      print('چک کردن سرویس موقعیت‌یابی...');
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        print('سرویس موقعیت‌یابی غیرفعال است');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لطفاً سرویس موقعیت‌یابی را فعال کنید')),
+        );
+        return;
+      }
+
+      // 2. چک کردن و درخواست مجوز موقعیت‌یابی
+      print('چک کردن مجوز موقعیت‌یابی...');
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          print('کاربر مجوز موقعیت‌یابی را رد کرد');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('لطفاً مجوز دسترسی به موقعیت مکانی را فعال کنید')),
+          );
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        print('مجوز موقعیت‌یابی به‌طور دائم رد شده است');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('مجوز موقعیت مکانی به‌طور دائم رد شده است. لطفاً از تنظیمات فعال کنید')),
+        );
+        return;
+      }
+
+      // 3. گرفتن موقعیت فعلی
+      print('در حال گرفتن موقعیت فعلی...');
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException('گرفتن موقعیت مکانی بیش از حد طول کشید');
+      });
+      print('موقعیت دریافت شد: lat=${position.latitude}, lon=${position.longitude}');
+
+      // 4. گرفتن نام شهر از API نشان
+      print('در حال دریافت نام شهر...');
+      final apiProvider = locator<ApiProvider>();
+      final cityItem = await apiProvider.getCityByCoordinates(position.latitude, position.longitude);
+      String cityName = cityItem?.title ?? 'موقعیت نامشخص';
+      print('نام شهر دریافت شد: $cityName');
+
+      // 5. به‌روزرسانی متغیرها
+      setState(() {
+        _currentCity = cityName;
+        _currentLat = position.latitude;
+        _currentLon = position.longitude;
+      });
+
+      // 6. بارگذاری داده‌های آب‌وهوا
+      print('در حال بارگذاری داده‌های آب‌وهوا برای $cityName...');
+      final params = ForecastParams(position.latitude, position.longitude);
+      context.read<HomeBloc>().add(LoadCwEvent(cityName, lat: position.latitude, lon: position.longitude));
+      context.read<HomeBloc>().add(LoadFwEvent(params));
+      context.read<HomeBloc>().add(LoadAirQualityEvent(params));
+
+      print('موقعیت فعلی: $cityName, lat=${position.latitude}, lon=${position.longitude}');
+    } catch (e, stackTrace) {
+      print('خطا در گرفتن موقعیت مکانی: $e');
+      print('StackTrace: $stackTrace');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطا در گرفتن موقعیت مکانی: $e')),
+      );
+    } finally {
+      print('اتمام فرآیند لودینگ موقعیت مکانی');
+      setState(() {
+        _isLoadingLocation = false;
+      });
+    }
+  }
+
   String _formatTime(String? isoTime) {
     if (isoTime == null || isoTime.isEmpty) return '--:--';
     try {
@@ -99,7 +178,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   @override
   void dispose() {
-    // widget.notificationService.stopPeriodicUpdate(); // توقف به‌روزرسانی دوره‌ای
     _searchController.dispose();
     _searchFocus.dispose();
     _homeBloc.close();
@@ -158,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: TypeAheadField<NeshanCityItem>(
+                          child: TypeAheadField<neshan.NeshanCityItem>(
                             controller: _searchController,
                             focusNode: _searchFocus,
                             suggestionsCallback: (pattern) async {
@@ -168,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               }
                               return await _suggestionUseCase(pattern);
                             },
-                            itemBuilder: (context, NeshanCityItem model) {
+                            itemBuilder: (context, neshan.NeshanCityItem model) {
                               return ListTile(
                                 leading: const Icon(Icons.location_on),
                                 title: Text(model.title ?? '', style: const TextStyle(fontSize: 16), maxLines: 1),
@@ -198,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 },
                               );
                             },
-                            onSelected: (NeshanCityItem model) async {
+                            onSelected: (neshan.NeshanCityItem model) async {
                               print('City selected: ${model.title}, clearing TextField');
                               _searchController.clear();
                               _searchFocus.unfocus();
@@ -207,24 +285,17 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               final lon = model.location?.x;
                               print('مختصات شهر انتخاب‌شده (${model.title}): lat=$lat, lon=$lon');
                               if (lat != null && lon != null) {
-                                // setState(() {
-                                //   _currentCity = model.title!;
-                                //   _currentLat = lat;
-                                //   _currentLon = lon;
-                                // });
+                                setState(() {
+                                  _currentCity = model.title!;
+                                  _currentLat = lat;
+                                  _currentLon = lon;
+                                });
                                 final params = ForecastParams(lat, lon);
-                                context.read<HomeBloc>().add(LoadCwEvent(model.title!));
+                                context.read<HomeBloc>().add(LoadCwEvent(model.title!, lat: lat, lon: lon));
                                 context.read<HomeBloc>().add(LoadFwEvent(params));
                                 context.read<HomeBloc>().add(LoadAirQualityEvent(params));
                                 _isForecastLoaded = false;
                                 _isAirQualityLoaded = false;
-                                // await widget.notificationService.resetNotificationStatus(0);
-                                // // شروع به‌روزرسانی دوره‌ای برای شهر جدید
-                                // widget.notificationService.startPeriodicUpdate(
-                                //   model.title!,
-                                //   lat,
-                                //   lon,
-                                // );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('مختصات شهر پیدا نشد')),
@@ -265,10 +336,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             : const Icon(Icons.my_location, color: Colors.white),
                         onPressed: _isLoadingLocation
                             ? null
-                            : () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('فعلاً لوکیشن غیرفعال است')),
-                          );
+                            : () async {
+                          await _getCurrentLocation();
                         },
                         tooltip: 'استفاده از موقعیت فعلی',
                       ),
@@ -299,14 +368,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
                       final temp = city.main?.temp?.round() ?? 0;
                       final cityName = city.name ?? 'شهر نامشخص';
-
-                      // ثبت نوتیفیکیشن توی نوتیفیکیشن سنتر
-                      // widget.notificationService.showNotification(
-                      //   id: 0,
-                      //   title: 'وضعیت آب‌وهوا',
-                      //   body: 'دمای $cityName: $temp°',
-                      //   payload: 'weather_update',
-                      // );
 
                       if (!_isForecastLoaded) {
                         final lat = city.coord?.lat;
@@ -341,7 +402,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             padding: const EdgeInsets.all(5),
                             child: Column(
                               children: [
-                                Text(city.name ?? '', maxLines: 1, style: const TextStyle(fontFamily: "nazanin", fontSize: 30, color: Colors.white,fontWeight: FontWeight.bold)),
+                                Text(
+                                  _currentCity == 'موقعیت نامشخص' ? 'موقعیت نامشخص: $cityName' : cityName,
+                                  maxLines: 1,
+                                  style: const TextStyle(fontFamily: "nazanin", fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
@@ -364,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
-                                    Text('${city.main?.temp?.round() ?? 0}°', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white)),
+                                    Text('$temp°', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white)),
                                     Column(
                                       children: [
                                         const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14)),

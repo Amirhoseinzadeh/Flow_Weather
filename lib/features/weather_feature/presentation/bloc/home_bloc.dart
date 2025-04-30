@@ -26,7 +26,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<LoadCwEvent>((event, emit) async {
       emit(state.copyWith(newCwStatus: CwLoading()));
       try {
-        DataState dataState = await getCurrentWeatherUseCase(event.cityName);
+        DataState dataState;
+        if (event.lat != null && event.lon != null) {
+          dataState = await getCurrentWeatherUseCase({
+            'cityName': event.cityName,
+            'lat': event.lat!,
+            'lon': event.lon!,
+          });
+        } else {
+          dataState = await getCurrentWeatherUseCase({
+            'cityName': event.cityName,
+          });
+        }
         if (dataState is DataSuccess) {
           emit(state.copyWith(newCwStatus: CwCompleted(dataState.data)));
         } else {

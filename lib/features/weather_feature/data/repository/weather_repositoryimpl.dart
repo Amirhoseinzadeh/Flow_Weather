@@ -26,6 +26,17 @@ class WeatherRepositoryImpl extends WeatherRepository {
   }
 
   @override
+  Future<DataState<MeteoCurrentWeatherEntity>> getCurrentWeatherByCoordinates(double lat, double lon) async {
+    try {
+      MeteoCurrentWeatherEntity currentWeatherEntity = await _apiProvider.getCurrentWeatherByCoordinates(lat, lon);
+      return DataSuccess(currentWeatherEntity);
+    } catch (e) {
+      print(e.toString());
+      return DataFailed("please check your connection...");
+    }
+  }
+
+  @override
   Future<DataState<ForecastEntity>> fetchForecast(ForecastParams params) async {
     try {
       final json = await _apiProvider.getForecastWeather(params);
@@ -56,9 +67,4 @@ class WeatherRepositoryImpl extends WeatherRepository {
       return DataFailed("خطا در دریافت پیش‌بینی: ${e.toString()}");
     }
   }
-
-  // @override
-  // Future<AirQualityEntity> getAirQuality(ForecastParams params) async {
-  //   return await _apiProvider.getAirQuality(params);
-  // }
 }

@@ -8,6 +8,8 @@ import 'package:flow_weather/features/weather_feature/domain/entities/neshan_cit
 abstract class WeatherRepository {
   Future<DataState<MeteoCurrentWeatherEntity>> fetchCurrentWeatherData(String cityName);
 
+  Future<DataState<MeteoCurrentWeatherEntity>> getCurrentWeatherByCoordinates(double lat, double lon);
+
   Future<DataState<ForecastEntity>> fetchForecast(ForecastParams params);
 
   Future<List<NeshanCityItem>> fetchSuggestData(String cityName);

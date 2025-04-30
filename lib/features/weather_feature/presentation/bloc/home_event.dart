@@ -10,10 +10,13 @@ abstract class HomeEvent extends Equatable {
 
 class LoadCwEvent extends HomeEvent {
   final String cityName;
-  const LoadCwEvent(this.cityName);
+  final double? lat;
+  final double? lon;
+
+  const LoadCwEvent(this.cityName, {this.lat, this.lon});
 
   @override
-  List<Object> get props => [cityName];
+  List<Object> get props => [cityName, lat ?? 0.0, lon ?? 0.0];
 }
 
 class LoadFwEvent extends HomeEvent {
@@ -30,5 +33,5 @@ class LoadAirQualityEvent extends HomeEvent {
   const LoadAirQualityEvent(this.forecastParams);
 
   @override
-  List<Object> get props => [ forecastParams];
+  List<Object> get props => [forecastParams];
 }
