@@ -35,3 +35,11 @@ class LoadAirQualityEvent extends HomeEvent {
   @override
   List<Object> get props => [forecastParams];
 }
+
+class SetLocationLoading extends HomeEvent {
+  final bool isLoading;
+  const SetLocationLoading(this.isLoading);
+
+  @override
+  List<Object> get props => [isLoading];
+}

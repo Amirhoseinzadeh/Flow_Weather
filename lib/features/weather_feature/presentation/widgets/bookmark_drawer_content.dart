@@ -6,6 +6,7 @@ import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmar
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_all_city_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/cw_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,59 +18,97 @@ class BookmarkDrawerContent extends StatelessWidget {
     context.read<BookmarkBloc>().add(GetAllCitiesEvent());
     var width = MediaQuery.of(context).size.width;
     return SafeArea(
-      child: BlocBuilder<BookmarkBloc, BookmarkState>(
-        buildWhen: (prev, curr) => prev.getAllCityStatus != curr.getAllCityStatus,
-        builder: (context, state) {
-          if (state.getAllCityStatus is GetAllCityLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.getAllCityStatus is GetAllCityError) {
-            final err = state.getAllCityStatus as GetAllCityError;
-            return Center(child: Text(err.message ?? 'خطا', style: const TextStyle(color: Colors.white)));
-          }
-          final cities = (state.getAllCityStatus as GetAllCityCompleted).cities;
-          if (cities.isEmpty) {
-            return const Center(child: Text("هیچ شهری بوکمارک نشده است", style: TextStyle(color: Colors.white)));
-          }
-          return ListView.builder(
-            itemCount: cities.length,
-            itemBuilder: (context, index) {
-              final city = cities[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ClipPath(
-                  child: Container(
-                    width: width,
-                    height: 55.0,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                      color: Colors.grey.withOpacity(0.2),
-                    ),
-                    child: ListTile(
-                      title: Text(city.name, style: const TextStyle(color: Colors.white)),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
-                        onPressed: () {
-                          context.read<BookmarkBloc>().add(DeleteCityEvent(city.name));
-                          context.read<BookmarkBloc>().add(GetAllCitiesEvent());
-                          final cwStatus = context.read<HomeBloc>().state.cwStatus;
-                          if (cwStatus is CwCompleted && cwStatus.meteoCurrentWeatherEntity.name == city.name) {
-                            context.read<BookmarkBloc>().add(FindCityByNameEvent(city.name));
-                          }
-                        },
-                      ),
-                      onTap: () async {
-                        print('نام شهر انتخاب‌شده: ${city.name}');
-                        await loadCityWeather(context, city.name);
-                        Navigator.of(context).pop();
-                      },
-                    ),
+      child: Column(
+        children: [
+          // Item for getting current location
+          BlocBuilder<HomeBloc, HomeState>(
+            buildWhen: (prev, curr) => prev.isLocationLoading != curr.isLocationLoading,
+            builder: (context, state) {
+              final isLoading = state.isLocationLoading;
+              return ListTile(
+                leading: isLoading
+                    ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
+                )
+                    : const Icon(Icons.my_location, color: Colors.white),
+                title: const Text(
+                  'دریافت لوکیشن کنونی',
+                  style: TextStyle(color: Colors.white),
                 ),
+                onTap: isLoading
+                    ? null
+                    : () {
+                  // فعال کردن حالت لودینگ و درخواست موقعیت
+                  context.read<HomeBloc>().add(const SetLocationLoading(true));
+                  context.read<HomeBloc>().getCurrentLocation(context, forceRequest: true);
+                  Navigator.of(context).pop();
+                },
               );
             },
-          );
-        },
+          ),
+          const Divider(color: Colors.white24),
+          Expanded(
+            child: BlocBuilder<BookmarkBloc, BookmarkState>(
+              buildWhen: (prev, curr) => prev.getAllCityStatus != curr.getAllCityStatus,
+              builder: (context, state) {
+                if (state.getAllCityStatus is GetAllCityLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state.getAllCityStatus is GetAllCityError) {
+                  final err = state.getAllCityStatus as GetAllCityError;
+                  return Center(child: Text(err.message ?? 'خطا', style: const TextStyle(color: Colors.white)));
+                }
+                final cities = (state.getAllCityStatus as GetAllCityCompleted).cities;
+                if (cities.isEmpty) {
+                  return const Center(child: Text("هیچ شهری بوکمارک نشده است", style: TextStyle(color: Colors.white)));
+                }
+                return ListView.builder(
+                  itemCount: cities.length,
+                  itemBuilder: (context, index) {
+                    final city = cities[index];
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipPath(
+                        child: Container(
+                          width: width,
+                          height: 55.0,
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.all(Radius.circular(20)),
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                          child: ListTile(
+                            title: Text(city.name, style: const TextStyle(color: Colors.white)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
+                              onPressed: () {
+                                context.read<BookmarkBloc>().add(DeleteCityEvent(city.name));
+                                context.read<BookmarkBloc>().add(GetAllCitiesEvent());
+                                final cwStatus = context.read<HomeBloc>().state.cwStatus;
+                                if (cwStatus is CwCompleted && cwStatus.meteoCurrentWeatherEntity.name == city.name) {
+                                  context.read<BookmarkBloc>().add(FindCityByNameEvent(city.name));
+                                }
+                              },
+                            ),
+                            onTap: () async {
+                              print('نام شهر انتخاب‌شده: ${city.name}');
+                              await loadCityWeather(context, city.name);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

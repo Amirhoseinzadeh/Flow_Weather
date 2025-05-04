@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flow_weather/config/notification/notification_service.dart';
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
 import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
@@ -22,7 +21,7 @@ import 'package:flow_weather/features/weather_feature/presentation/widgets/bookm
 import 'package:flow_weather/features/weather_feature/presentation/widgets/bookmark_icon.dart';
 import 'package:flow_weather/features/weather_feature/presentation/widgets/forecast_next_days_widget.dart';
 import 'package:flow_weather/locator.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:lottie/lottie.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   late FocusNode _searchFocus;
   bool _isForecastLoaded = false;
   bool _isAirQualityLoaded = false;
-  bool _isLoadingLocation = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final HomeBloc _homeBloc;
@@ -61,12 +59,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('TextField focus changed: ${_searchFocus.hasFocus}');
     });
 
-    // بارگذاری لوکیشن هنگام ورود
-    _getCurrentLocation();
+    // Load location on initialization using HomeBloc
+    _homeBloc.getCurrentLocation(context, forceRequest: false);
   }
 
   Future<void> _loadDefaultData() async {
-    double defaultLat = 35.6892; // تهران
+    double defaultLat = 35.6892; // Tehran
     double defaultLon = 51.3890;
     final params = ForecastParams(defaultLat, defaultLon);
     print('بارگذاری داده‌های پیش‌فرض برای تهران: lat=$defaultLat, lon=$defaultLon');
@@ -80,94 +78,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('خطا در بارگذاری داده‌های پیش‌فرض')),
       );
-    }
-  }
-
-  Future<void> _getCurrentLocation() async {
-    setState(() {
-      _isLoadingLocation = true;
-    });
-
-    try {
-      // 1. چک کردن فعال بودن سرویس موقعیت‌یابی
-      print('چک کردن سرویس موقعیت‌یابی...');
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        print('سرویس موقعیت‌یابی غیرفعال است');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('سرویس موقعیت‌یابی غیرفعال است. بارگذاری داده‌ها برای تهران')),
-        );
-        await _loadDefaultData();
-        return;
-      }
-
-      // 2. چک کردن و درخواست مجوز موقعیت‌یابی
-      print('چک کردن مجوز موقعیت‌یابی...');
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          print('کاربر مجوز موقعیت‌یابی را رد کرد');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('مجوز دسترسی به موقعیت مکانی رد شد. بارگذاری داده‌ها برای تهران')),
-          );
-          await _loadDefaultData();
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        // print('مجوز موقعیت‌یابی به‌طور دائم رد شده است');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('شهر موردنظر را سرچ کنید')),
-        );
-        await _loadDefaultData();
-        return;
-      }
-
-      // 3. گرفتن موقعیت فعلی
-      print('در حال گرفتن موقعیت فعلی...');
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException('گرفتن موقعیت مکانی بیش از حد طول کشید');
-      });
-      print('موقعیت دریافت شد: lat=${position.latitude}, lon=${position.longitude}');
-
-      // 4. گرفتن نام شهر از API نشان
-      print('در حال دریافت نام شهر...');
-      final apiProvider = locator<ApiProvider>();
-      final cityItem = await apiProvider.getCityByCoordinates(position.latitude, position.longitude);
-      String cityName = cityItem?.title ?? 'موقعیت نامشخص';
-      print('نام شهر دریافت شد: $cityName');
-
-      // 5. به‌روزرسانی متغیرها
-      setState(() {
-        _currentCity = cityName;
-        _currentLat = position.latitude;
-        _currentLon = position.longitude;
-      });
-
-      // 6. بارگذاری داده‌های آب‌وهوا
-      print('در حال بارگذاری داده‌های آب‌وهوا برای $cityName...');
-      final params = ForecastParams(position.latitude, position.longitude);
-      context.read<HomeBloc>().add(LoadCwEvent(cityName, lat: position.latitude, lon: position.longitude));
-      context.read<HomeBloc>().add(LoadFwEvent(params));
-      context.read<HomeBloc>().add(LoadAirQualityEvent(params));
-
-      print('موقعیت فعلی: $cityName, lat=${position.latitude}, lon=${position.longitude}');
-    } catch (e, stackTrace) {
-      print('خطا در گرفتن موقعیت مکانی: $e');
-      print('StackTrace: $stackTrace');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطا در گرفتن موقعیت مکانی: $e. بارگذاری داده‌ها برای تهران')),
-      );
-      await _loadDefaultData();
-    } finally {
-      print('اتمام فرآیند لودینگ موقعیت مکانی');
-      setState(() {
-        _isLoadingLocation = false;
-      });
     }
   }
 
@@ -331,21 +241,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                           return const SizedBox.shrink();
                         },
                       ),
-                      IconButton(
-                        icon: _isLoadingLocation
-                            ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                            : const Icon(Icons.my_location, color: Colors.white),
-                        onPressed: _isLoadingLocation
-                            ? null
-                            : () async {
-                          await _getCurrentLocation();
-                        },
-                        tooltip: 'استفاده از موقعیت فعلی',
-                      ),
                     ],
                   ),
                 ),
@@ -410,34 +305,46 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 Text(
                                   _currentCity == 'موقعیت نامشخص' ? 'موقعیت نامشخص: $cityName' : cityName,
                                   maxLines: 1,
-                                  style: const TextStyle(fontFamily: "Titr", fontSize: 26, color: Colors.white),
+                                  style: const TextStyle(fontFamily: "Titr", fontSize: 30, color: Colors.white),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
-                                  style: const TextStyle(fontFamily: "nazanin", fontSize: 20, color: Colors.white70,fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontFamily: "nazanin", fontSize: 22, color: Colors.white70, fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(height: 10),
+                                // const SizedBox(height: 10),
+
+                                // Center(
+                                //   child: Lottie.asset(
+                                //     'assets/lotties/sun.json',
+                                //     width: 90,
+                                //     height: 90,
+                                //     repeat: true,
+                                //     animate: true,
+                                //   ),
+                                // ),
+
                                 SizedBox(
-                                  height: 70,
-                                  width: 70,
+                                  height: 100,
+                                  width: 100,
                                   child: AppBackground.setIconForMain(
                                     city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
                                   ),
                                 ),
+                                // const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("حداقل دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14,fontWeight: FontWeight.bold)),
+                                        const Text("حداقل دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold)),
                                         Text("${minTemp.round()}°", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                     Text('$temp°', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white)),
                                     Column(
                                       children: [
-                                        const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14,fontWeight: FontWeight.bold)),
+                                        const Text("حداکثر دما", style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold)),
                                         Text("${maxTemp.round()}°", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
@@ -449,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nazanin", color: Colors.yellow,fontWeight: FontWeight.bold)),
+                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow)),
                                         Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -462,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     if (state.aqStatus is AirQualityError)
                                       Text(
                                         'خطا در بارگذاری کیفیت هوا: ${(state.aqStatus as AirQualityError).message}',
-                                        style: const TextStyle(fontFamily: "nazanin", color: Colors.red),
+                                        style: const TextStyle(fontFamily: "nikoo", color: Colors.red),
                                       ),
                                     if (state.aqStatus is AirQualityCompleted)
                                       Builder(
@@ -473,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                             children: [
                                               const Text(
                                                 "کیفیت هوا",
-                                                style: TextStyle(fontFamily: "nazanin", color: Colors.yellow,fontWeight: FontWeight.bold),
+                                                style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow),
                                               ),
                                               Text(
                                                 'AQI: ${airQuality.aqi} (${airQuality.category})',
@@ -486,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("رطوبت", style: TextStyle(fontFamily: "nazanin", color: Colors.yellow,fontWeight: FontWeight.bold)),
+                                        const Text("رطوبت", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow)),
                                         Text("${city.main?.humidity ?? 0}%", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -498,14 +405,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("طلوع", style: TextStyle(fontFamily: "nazanin", color: Colors.amber,fontWeight: FontWeight.bold)),
+                                        const Text("طلوع", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.orangeAccent)),
                                         Text(sunrise, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("غروب", style: TextStyle(fontFamily: "nazanin", color: Colors.amber,fontWeight: FontWeight.bold)),
+                                        const Text("غروب", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.orangeAccent)),
                                         Text(sunset, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -546,10 +453,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               "پیش‌بینی ساعتی",
                                               style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
                                             ),
-                                            Icon(Icons.access_time_outlined,color: Colors.grey.shade200,size: 30),
+                                            Icon(Icons.access_time_outlined, color: Colors.grey.shade200, size: 30),
                                           ],
                                         ),
-                                        
                                         const SizedBox(height: 10),
                                         SizedBox(
                                           height: 100,
@@ -608,10 +514,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               "پیش‌بینی ۱۴ روزه",
                                               style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
                                             ),
-                                            Icon(Icons.calendar_month_sharp,color: Colors.grey.shade300,size: 30),
+                                            Icon(Icons.calendar_month_sharp, color: Colors.grey.shade300, size: 30),
                                           ],
                                         ),
-
                                         const SizedBox(height: 10),
                                         ForecastNextDaysWidget(forecastDays: forecast.days),
                                       ],

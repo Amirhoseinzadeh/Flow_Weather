@@ -6,7 +6,6 @@ import 'package:flow_weather/core/utils/constants.dart';
 import 'package:flow_weather/features/weather_feature/data/models/air_quality_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/meteo_current_weather_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/neshan__city_model.dart';
-import 'package:flow_weather/features/weather_feature/domain/entities/air_quality_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart' as neshan;
 import 'package:geocoding/geocoding.dart' as geocoding;
@@ -248,11 +247,15 @@ class ApiProvider {
 
   Future<AirQualityModel> getAirQuality(ForecastParams params) async {
     try {
+      final today = DateTime.now().toIso8601String().split('T')[0]; // مثلاً 2023-10-25
       final response = await _dio.get(
         'https://air-quality-api.open-meteo.com/v1/air-quality',
         queryParameters: {
           'latitude': params.lat,
           'longitude': params.lon,
+          'start_date': today,
+          'end_date': today,
+          'forecast_days': 0,
           'current': 'pm10,pm2_5,ozone,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide',
           'timezone': 'Asia/Tehran',
         },

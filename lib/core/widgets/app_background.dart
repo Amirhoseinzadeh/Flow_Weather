@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class AppBackground {
 
@@ -14,7 +15,7 @@ class AppBackground {
     }
   }
 
-  static Image setIconForMain(String? description) {
+  static StatefulWidget setIconForMain(String? description) {
     if (description == null || description.isEmpty) {
       print("Description is null or empty, using default icon");
       return Image(image: AssetImage('assets/images/icons8-windy-weather-80.png'));
@@ -23,22 +24,42 @@ class AppBackground {
     print("Description received: $description");
 
     if (description == "آفتابی") {
-      return Image(image: AssetImage('assets/images/icons8-sun-96.png'));
+      return Lottie.asset('assets/lotties/sunny.json',repeat: true,
+        animate: true,);
     } else if (description == "کمی ابری") {
-      return Image(image: AssetImage('assets/images/icons8-partly-cloudy-day-80.png'));
+      return Lottie.asset('assets/lotties/half_cloudy.json',repeat: true,
+        animate: true,);
     } else if (description.contains("ابری")) {
-      return Image(image: AssetImage('assets/images/icons8-clouds-80.png'));
+      return Lottie.asset('assets/lotties/cloudy.json',repeat: true,
+        animate: true,);
+    } else if (description.contains("مه")) {
+      return Lottie.asset('assets/lotties/fog.json',repeat: true,
+        animate: true,);
     } else if (description.contains("رعد و برق")) {
-      return Image(image: AssetImage('assets/images/icons8-storm-80.png'));
+      return Lottie.asset('assets/lotties/thunderstorm.json',repeat: true,
+        animate: true,);
     } else if (description.contains("باران ریز")) {
-      return Image(image: AssetImage('assets/images/icons8-rain-cloud-80.png'));
-    } else if (description.contains("باران") || description.contains("رگبار")) {
-      return Image(image: AssetImage('assets/images/icons8-heavy-rain-80.png'));
-    } else if (description.contains("برف") || description.contains("دانه برف")) {
-      return Image(image: AssetImage('assets/images/icons8-snow-80.png'));
+      return Lottie.asset('assets/lotties/light_rain.json',repeat: true,
+        animate: true,);
+    } else if (description.contains("باران یخ زده")) {
+      return Lottie.asset('assets/lotties/tagarg.json',repeat: true,
+        animate: true,);
+    } else if (description.contains("باران") ) {
+      return Lottie.asset('assets/lotties/rain.json',repeat: true,
+        animate: true,);
+    } else if (description.contains("رگبار")) {
+      return Lottie.asset('assets/lotties/storm.json',repeat: true,
+        animate: true,);
+    } else if (description.contains("برف")) {
+      return Lottie.asset('assets/lotties/snow.json',repeat: true,
+        animate: true,);
+    } else if (description == "برف سبک" || description == "دانه برف") {
+      return Lottie.asset('assets/lotties/light_snow.json',repeat: true,
+        animate: true,);
     } else {
       print("Description '$description' not matched, using default icon");
-      return Image(image: AssetImage('assets/images/icons8-windy-weather-80.png'));
+      return Lottie.asset('assets/lotties/windy.json',repeat: true,
+        animate: true,);
     }
   }
 }
