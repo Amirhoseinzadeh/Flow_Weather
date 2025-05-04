@@ -38,7 +38,7 @@ class AppBackground {
     } else if (description.contains("رعد و برق")) {
       return Lottie.asset('assets/lotties/thunderstorm.json',repeat: true,
         animate: true,);
-    } else if (description.contains("باران ریز")) {
+    } else if (description == "باران ریز" || description == "باران سبک") {
       return Lottie.asset('assets/lotties/light_rain.json',repeat: true,
         animate: true,);
     } else if (description.contains("باران یخ زده")) {

@@ -158,11 +158,11 @@ class AirQualityModel extends AirQualityEntity {
     } else if (overallAqi <= 100) {
       category = 'متوسط';
     } else if (overallAqi <= 150) {
-      category = 'ناسالم برای گروه‌های حساس';
+      category = 'متوسط';
     } else if (overallAqi <= 200) {
       category = 'ناسالم';
     } else if (overallAqi <= 300) {
-      category = 'خیلی ناسالم';
+      category = 'ناسالم';
     } else {
       category = 'خطرناک';
     }

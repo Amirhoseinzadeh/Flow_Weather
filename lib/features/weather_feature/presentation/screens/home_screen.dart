@@ -59,17 +59,15 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       print('TextField focus changed: ${_searchFocus.hasFocus}');
     });
 
-    // Load location on initialization using HomeBloc
+    _loadDefaultData();
     _homeBloc.getCurrentLocation(context, forceRequest: false);
   }
 
   Future<void> _loadDefaultData() async {
-    double defaultLat = 35.6892; // Tehran
-    double defaultLon = 51.3890;
-    final params = ForecastParams(defaultLat, defaultLon);
-    print('بارگذاری داده‌های پیش‌فرض برای تهران: lat=$defaultLat, lon=$defaultLon');
+    final params = ForecastParams(_currentLat, _currentLon);
+    print('بارگذاری داده‌های پیش‌فرض برای تهران: lat=$_currentLat, lon=$_currentLon');
     try {
-      _homeBloc.add(LoadCwEvent("تهران"));
+      _homeBloc.add(LoadCwEvent(_currentCity, lat: _currentLat, lon: _currentLon));
       _homeBloc.add(LoadFwEvent(params));
       _homeBloc.add(LoadAirQualityEvent(params));
       print('داده‌های پیش‌فرض برای تهران بارگذاری شد');
@@ -270,9 +268,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       final cityName = city.name ?? 'شهر نامشخص';
 
                       if (!_isForecastLoaded) {
-                        final lat = city.coord?.lat;
-                        final lon = city.coord?.lon;
-                        print('مختصات از آب‌وهوای فعلی: lat=$lat, lon=$lon');
+                        final lat = city.coord?.lat ?? _currentLat;
+                        final lon = city.coord?.lon ?? _currentLon;
+                        print('مختصات از آب‌وهوای فعلی یا پیش‌فرض: lat=$lat, lon=$lon');
                         if (lat != null && lon != null) {
                           final params = ForecastParams(lat, lon);
                           _homeBloc.add(LoadFwEvent(params));
@@ -312,18 +310,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
                                   style: const TextStyle(fontFamily: "nazanin", fontSize: 22, color: Colors.white70, fontWeight: FontWeight.bold),
                                 ),
-                                // const SizedBox(height: 10),
-
-                                // Center(
-                                //   child: Lottie.asset(
-                                //     'assets/lotties/sun.json',
-                                //     width: 90,
-                                //     height: 90,
-                                //     repeat: true,
-                                //     animate: true,
-                                //   ),
-                                // ),
-
                                 SizedBox(
                                   height: 100,
                                   width: 100,
@@ -331,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
                                   ),
                                 ),
-                                // const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
@@ -356,8 +341,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow)),
-                                        Text("${city.wind?.speed ?? 0} km", style: const TextStyle(color: Colors.white)),
+                                        const Text("سرعت باد", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text("${city.wind?.speed?.toStringAsFixed(1) ?? '0'} km/h", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 31, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
@@ -378,14 +363,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
-                                              const Text(
-                                                "کیفیت هوا",
-                                                style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow),
-                                              ),
-                                              Text(
-                                                'AQI: ${airQuality.aqi} (${airQuality.category})',
-                                                style: const TextStyle(color: Colors.white, fontSize: 12),
-                                              ),
+                                              const Text("کیفیت هوا", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                              Text('AQI: ${airQuality.aqi} (${airQuality.category})', style: const TextStyle(color: Colors.white, fontSize: 12)),
                                             ],
                                           );
                                         },
@@ -393,7 +372,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("رطوبت", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.yellow)),
+                                        const Text("احتمال بارندگی", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text("${city.precipitationProbability ?? 0}%", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("رطوبت", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
                                         Text("${city.main?.humidity ?? 0}%", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -405,15 +391,29 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   children: [
                                     Column(
                                       children: [
-                                        const Text("طلوع", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.orangeAccent)),
+                                        const Text("طلوع", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.orangeAccent)),
                                         Text(sunrise, style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
-                                        const Text("غروب", style: TextStyle(fontFamily: "nikoo",fontSize: 18, color: Colors.orangeAccent)),
+                                        const Text("غروب", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.orangeAccent)),
                                         Text(sunset, style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("فشار", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text("${city.main?.pressure ?? 0} hPa", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
+                                        const Text("اشعه UV", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text("${city.uvIndex?.toStringAsFixed(1) ?? '0'}", style: const TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                   ],
@@ -449,10 +449,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            const Text(
-                                              "پیش‌بینی ساعتی",
-                                              style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
-                                            ),
+                                            const Text("پیش‌بینی ساعتی", style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white)),
                                             Icon(Icons.access_time_outlined, color: Colors.grey.shade200, size: 30),
                                           ],
                                         ),
@@ -471,10 +468,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text(
-                                                      i == 0 ? "اکنون" : lbl,
-                                                      style: const TextStyle(color: Colors.white70),
-                                                    ),
+                                                    Text(i == 0 ? "اکنون" : lbl, style: const TextStyle(color: Colors.white70)),
                                                     const SizedBox(height: 2),
                                                     Image.asset(
                                                       h.conditionIcon,
@@ -483,10 +477,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
                                                     ),
                                                     const SizedBox(height: 2),
-                                                    Text(
-                                                      '${h.temperature.round()}°',
-                                                      style: const TextStyle(color: Colors.white),
-                                                    ),
+                                                    Text('${h.temperature.round()}°', style: const TextStyle(color: Colors.white)),
                                                   ],
                                                 ),
                                               );
@@ -510,10 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            const Text(
-                                              "پیش‌بینی ۱۴ روزه",
-                                              style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
-                                            ),
+                                            const Text("پیش‌بینی ۱۴ روزه", style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white)),
                                             Icon(Icons.calendar_month_sharp, color: Colors.grey.shade300, size: 30),
                                           ],
                                         ),

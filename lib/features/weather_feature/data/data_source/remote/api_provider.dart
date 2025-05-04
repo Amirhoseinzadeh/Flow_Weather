@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:flow_weather/core/params/ForecastParams.dart';
 import 'package:flow_weather/core/utils/constants.dart';
@@ -125,35 +124,47 @@ class ApiProvider {
     }
   }
 
-  Future<MeteoCurrentWeatherEntity> callCurrentWeather(String cityName) async {
+  Future<MeteoCurrentWeatherEntity> callCurrentWeather(String cityName, {double? lat, double? lon}) async {
     try {
       final cityData = await sendRequestCitySuggestion(cityName);
-      final city = cityData.items?.first;
-      if (city == null || city.location == null) {
-        throw Exception('شهر پیدا نشد یا مختصات نامعتبر است');
+      final city = cityData.items?.firstWhere(
+            (item) => item.location != null,
+        orElse: () => neshan.NeshanCityItem(title: cityName, location: null),
+      );
+      if (city!.location == null && (lat == null || lon == null)) {
+        throw Exception('مختصات برای شهر $cityName نامعتبر است');
       }
 
+      final usedLat = lat ?? city.location!.y;
+      final usedLon = lon ?? city.location!.x;
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
+      final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(Duration(days: 1)));
+      final currentHour = DateFormat('yyyy-MM-ddTHH:00').format(now);
 
       var response = await _dio.get(
         "https://api.open-meteo.com/v1/forecast",
         queryParameters: {
-          'latitude': city.location!.y,
-          'longitude': city.location!.x,
-          'current_weather': true,
+          'latitude': usedLat,
+          'longitude': usedLon,
+          'current': 'temperature_2m,relativehumidity_2m,pressure_msl,weathercode,windspeed_10m,winddirection_10m',
+          'hourly': 'uv_index,precipitation_probability',
           'daily': 'sunrise,sunset',
           'start_date': today,
-          'end_date': today,
+          'end_date': tomorrow, // گسترش بازه زمانی به فردا
           'timezone': 'Asia/Tehran',
         },
       ).timeout(const Duration(seconds: 10));
+
+      print('پاسخ API برای $cityName با مختصات lat=$usedLat, lon=$usedLon: ${response.data}');
+      print('احتمال بارندگی ساعتی: ${response.data['hourly']['precipitation_probability']}');
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
           name: city.title,
-          coord: Coord(lat: city.location!.y, lon: city.location!.x),
+          coord: Coord(lat: usedLat, lon: usedLon),
+          currentHour: currentHour,
         );
 
         return MeteoCurrentWeatherEntity(
@@ -164,10 +175,13 @@ class ApiProvider {
           main: model.main,
           wind: model.wind,
           weather: model.weather,
+          uvIndex: model.uvIndex,
+          precipitationProbability: model.precipitationProbability,
         );
       }
       throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
+      print('خطا در callCurrentWeather: $e');
       throw Exception('خطا در دریافت آب‌وهوای کنونی: $e');
     }
   }
@@ -176,28 +190,34 @@ class ApiProvider {
     try {
       final city = await getCityByCoordinates(lat, lon);
       final cityName = city?.title ?? 'موقعیت نامشخص';
-
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
+      final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(Duration(days: 1)));
+      final currentHour = DateFormat('yyyy-MM-ddTHH:00').format(now);
 
       var response = await _dio.get(
         "https://api.open-meteo.com/v1/forecast",
         queryParameters: {
           'latitude': lat,
           'longitude': lon,
-          'current_weather': true,
+          'current': 'temperature_2m,relativehumidity_2m,pressure_msl,weathercode,windspeed_10m,winddirection_10m',
+          'hourly': 'uv_index,precipitation_probability',
           'daily': 'sunrise,sunset',
           'start_date': today,
-          'end_date': today,
+          'end_date': tomorrow, // گسترش بازه زمانی به فردا
           'timezone': 'Asia/Tehran',
         },
       ).timeout(const Duration(seconds: 10));
+
+      print('پاسخ API برای مختصات lat=$lat, lon=$lon: ${response.data}');
+      print('احتمال بارندگی ساعتی: ${response.data['hourly']['precipitation_probability']}');
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
           name: cityName,
           coord: Coord(lat: lat, lon: lon),
+          currentHour: currentHour,
         );
 
         return MeteoCurrentWeatherEntity(
@@ -208,10 +228,13 @@ class ApiProvider {
           main: model.main,
           wind: model.wind,
           weather: model.weather,
+          uvIndex: model.uvIndex,
+          precipitationProbability: model.precipitationProbability,
         );
       }
       throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
+      print('خطا در getCurrentWeatherByCoordinates: $e');
       throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: $e');
     }
   }
@@ -229,7 +252,7 @@ class ApiProvider {
           'latitude': params.lat,
           'longitude': params.lon,
           'daily': 'weathercode,temperature_2m_max,temperature_2m_min',
-          'hourly': 'temperature_2m,weathercode',
+          'hourly': 'temperature_2m,weathercode,precipitation_probability',
           'start_date': startDate,
           'end_date': endDate,
           'timezone': 'auto',
@@ -247,7 +270,7 @@ class ApiProvider {
 
   Future<AirQualityModel> getAirQuality(ForecastParams params) async {
     try {
-      final today = DateTime.now().toIso8601String().split('T')[0]; // مثلاً 2023-10-25
+      final today = DateTime.now().toIso8601String().split('T')[0];
       final response = await _dio.get(
         'https://air-quality-api.open-meteo.com/v1/air-quality',
         queryParameters: {

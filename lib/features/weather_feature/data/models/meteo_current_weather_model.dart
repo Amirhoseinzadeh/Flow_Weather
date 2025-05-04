@@ -1,4 +1,3 @@
-
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 
 class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
@@ -16,6 +15,8 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     String? description,
     String? sunrise,
     String? sunset,
+    double? uvIndex,
+    int? precipitationProbability,
   }) : super(
     name: name,
     coord: coord,
@@ -33,33 +34,85 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     weather: weatherCode != null && description != null
         ? [Weather(id: weatherCode, description: description)]
         : [],
+    uvIndex: uvIndex,
+    precipitationProbability: precipitationProbability,
   );
 
-  factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord}) {
-    final currentWeather = json['current_weather'] ?? {};
+  factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord, String? currentHour}) {
+    final current = json['current'] ?? {};
+    final hourly = json['hourly'] ?? {};
     final daily = json['daily'] ?? {};
-    final weatherCode = currentWeather['weathercode'] as int? ?? 0;
+    final weatherCode = current['weathercode'] as int? ?? 0;
+
+    // پیدا کردن UV Index و احتمال بارندگی
+    double? uvIndex;
+    int? precipitationProbability;
+
+    if (currentHour != null && hourly['time'] != null) {
+      final times = (hourly['time'] as List<dynamic>?)?.cast<String>() ?? [];
+      print('ساعت فعلی: $currentHour');
+      print('لیست زمان‌ها: $times');
+
+      // پیدا کردن نزدیک‌ترین زمان به ساعت فعلی
+      DateTime currentDateTime = DateTime.parse(currentHour);
+      int closestIndex = -1;
+      Duration minDifference = Duration(days: 365); // یک مقدار اولیه بزرگ
+
+      for (int i = 0; i < times.length; i++) {
+        DateTime timeDate = DateTime.parse(times[i]);
+        Duration difference = currentDateTime.difference(timeDate).abs();
+        if (difference < minDifference) {
+          minDifference = difference;
+          closestIndex = i;
+        }
+      }
+
+      if (closestIndex != -1) {
+        // UV Index
+        final uvIndexes = (hourly['uv_index'] as List<dynamic>?)?.cast<double>() ?? [];
+        if (closestIndex < uvIndexes.length) {
+          uvIndex = uvIndexes[closestIndex];
+          print('UV Index برای نزدیک‌ترین زمان (${times[closestIndex]}): $uvIndex');
+        }
+
+        // پیدا کردن حداکثر احتمال بارندگی برای 6 ساعت آینده
+        final probabilities = (hourly['precipitation_probability'] as List<dynamic>?)?.cast<int>() ?? [];
+        if (closestIndex < probabilities.length) {
+          // از زمان فعلی تا 6 ساعت بعد
+          int maxProbability = 0;
+          for (int i = closestIndex; i < probabilities.length && i < closestIndex + 6; i++) {
+            if (probabilities[i] > maxProbability) {
+              maxProbability = probabilities[i];
+            }
+          }
+          precipitationProbability = maxProbability;
+          print('حداکثر احتمال بارندگی برای 6 ساعت آینده از (${times[closestIndex]}): $precipitationProbability%');
+        }
+      }
+    }
 
     // تبدیل timezone از رشته (مثل "Asia/Tehran") به عدد (offset ثانیه‌ای)
     final timezoneStr = json['timezone'] as String? ?? 'UTC';
     final timezoneOffset = _getTimezoneOffset(timezoneStr);
 
     return MeteoCurrentWeatherModel(
-      name: name ?? json['city_name'] as String?, // استفاده از name ورودی یا مقدار پیش‌فرض
+      name: name ?? json['city_name'] as String?,
       coord: coord ?? Coord(
         lat: json['latitude'] as double?,
         lon: json['longitude'] as double?,
       ),
-      temperature: currentWeather['temperature'] as double?,
-      humidity: json['current']?['relativehumidity_2m'] as int?,
-      pressure: json['current']?['pressure_msl'] as double?,
-      windSpeed: currentWeather['windspeed'] as double?,
-      windDirection: currentWeather['winddirection'] as int?,
+      temperature: current['temperature_2m'] as double?,
+      humidity: current['relativehumidity_2m'] as int?,
+      pressure: current['pressure_msl'] as double?,
+      windSpeed: current['windspeed_10m'] as double?,
+      windDirection: current['winddirection_10m'] as int?,
       weatherCode: weatherCode,
       description: _mapWeatherCodeToDescription(weatherCode, 'fa'),
       timezone: timezoneOffset,
       sunrise: daily['sunrise']?[0] as String?,
       sunset: daily['sunset']?[0] as String?,
+      uvIndex: uvIndex,
+      precipitationProbability: precipitationProbability,
     );
   }
 
@@ -69,24 +122,24 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       0: 'آفتابی',
       1: 'کمی ابری',
       2: 'ابری',
-      3: 'ابری',
+      3: 'ابری کامل',
       45: 'مه',
       48: 'مه شدید',
-      51: 'باران ریز سبک',
-      53: 'باران ریز',
+      51: 'ابری',
+      53: 'ابری',
       55: 'باران ریز شدید',
-      56: 'باران ریز یخ‌زده',
+      56: 'ابری',
       57: 'باران ریز یخ‌زده شدید',
-      61: 'باران سبک',
+      61: 'ابری',
       63: 'باران',
       65: 'باران شدید',
-      66: 'باران یخ زده سبک',
-      67: 'باران یخ زده شدید',
+      66: 'ابری',
+      67: 'باران یخ‌زده شدید',
       71: 'برف سبک',
       73: 'برف',
       75: 'برف شدید',
       77: 'دانه برف',
-      80: 'رگبار سبک',
+      80: 'باران سبک',
       81: 'رگبار',
       82: 'رگبار شدید',
       85: 'برف سبک',
@@ -103,7 +156,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
   static int _getTimezoneOffset(String timezone) {
     const timezoneOffsets = {
       'UTC': 0,
-      'Asia/Tehran': 12600, // +03:30 (3 ساعت و 30 دقیقه = 12600 ثانیه)
+      'Asia/Tehran': 12600,
     };
     return timezoneOffsets[timezone] ?? 0;
   }

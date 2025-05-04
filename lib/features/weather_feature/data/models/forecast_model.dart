@@ -61,7 +61,7 @@ String _mapWeatherCodeToIcon(int code) {
   } else if (code == 45 || code == 48) {
     return "assets/images/icons8-clouds-80.png";
   } else if (code >= 51 && code <= 57) {
-    return "assets/images/icons8-rain-cloud-80.png";
+    return "assets/images/icons8-clouds-80.png";
   } else if (code >= 61 && code <= 67) {
     return "assets/images/icons8-heavy-rain-80.png";
   } else if (code >= 71 && code <= 77) {

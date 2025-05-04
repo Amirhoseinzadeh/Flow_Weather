@@ -1,13 +1,15 @@
 import 'package:equatable/equatable.dart';
 
 class MeteoCurrentWeatherEntity extends Equatable {
-  final String? name; // نام شهر
-  final Coord? coord; // مختصات
-  final Sys? sys; // طلوع و غروب خورشید
-  final int? timezone; // منطقه زمانی
-  final Main? main; // دما، رطوبت، فشار
-  final Wind? wind; // سرعت و جهت باد
-  final List<Weather>? weather; // وضعیت هوا (به‌صورت لیست)
+  final String? name;
+  final Coord? coord;
+  final Sys? sys;
+  final int? timezone;
+  final Main? main;
+  final Wind? wind;
+  final List<Weather>? weather;
+  final double? uvIndex;
+  final int? precipitationProbability; // احتمال بارندگی (درصد)
 
   MeteoCurrentWeatherEntity({
     this.name,
@@ -17,10 +19,12 @@ class MeteoCurrentWeatherEntity extends Equatable {
     this.main,
     this.wind,
     this.weather,
+    this.uvIndex,
+    this.precipitationProbability,
   });
 
   @override
-  List<Object?> get props => [name, coord, sys, timezone, main, wind, weather];
+  List<Object?> get props => [name, coord, sys, timezone, main, wind, weather, uvIndex, precipitationProbability];
 
   @override
   bool get stringify => true;
@@ -40,8 +44,8 @@ class Coord extends Equatable {
 }
 
 class Sys extends Equatable {
-  final String? sunrise; // تغییر به String
-  final String? sunset;  // تغییر به String
+  final String? sunrise;
+  final String? sunset;
 
   Sys({this.sunrise, this.sunset});
 
