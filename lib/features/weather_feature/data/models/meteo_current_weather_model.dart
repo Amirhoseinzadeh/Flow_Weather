@@ -17,6 +17,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     String? sunset,
     double? uvIndex,
     int? precipitationProbability,
+    double? elevation,
   }) : super(
     name: name,
     coord: coord,
@@ -36,7 +37,10 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
         : [],
     uvIndex: uvIndex,
     precipitationProbability: precipitationProbability,
-  );
+    elevation: elevation,
+  ) {
+    print('MeteoCurrentWeatherModel created with elevation: $elevation');
+  }
 
   factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord, String? currentHour}) {
     final current = json['current'] ?? {};
@@ -67,7 +71,10 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
         }
       }
 
-      if (closestIndex != -1) {
+      print('نزدیک‌ترین ایندکس: $closestIndex');
+      print('زمان نزدیک‌ترین ایندکس: ${closestIndex >= 0 ? times[closestIndex] : "ناموجود"}');
+
+      if (closestIndex != -1 && closestIndex < times.length) {
         // UV Index
         final uvIndexes = (hourly['uv_index'] as List<dynamic>?)?.cast<double>() ?? [];
         if (closestIndex < uvIndexes.length) {
@@ -75,25 +82,39 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
           print('UV Index برای نزدیک‌ترین زمان (${times[closestIndex]}): $uvIndex');
         }
 
-        // پیدا کردن حداکثر احتمال بارندگی برای 6 ساعت آینده
+        // پیدا کردن میانگین احتمال بارندگی برای 12 ساعت آینده
         final probabilities = (hourly['precipitation_probability'] as List<dynamic>?)?.cast<int>() ?? [];
-        if (closestIndex < probabilities.length) {
-          // از زمان فعلی تا 6 ساعت بعد
-          int maxProbability = 0;
-          for (int i = closestIndex; i < probabilities.length && i < closestIndex + 6; i++) {
-            if (probabilities[i] > maxProbability) {
-              maxProbability = probabilities[i];
-            }
+        print('داده‌های احتمال بارندگی خام: $probabilities');
+        if (probabilities.isNotEmpty && closestIndex < probabilities.length) {
+          int sumProbability = 0;
+          int validHours = 0;
+          for (int i = closestIndex; i < probabilities.length && i < closestIndex + 12; i++) {
+            sumProbability += probabilities[i];
+            validHours++;
+            print('ساعت ${times[i]}: احتمال بارندگی ${probabilities[i]}%');
           }
-          precipitationProbability = maxProbability;
-          print('حداکثر احتمال بارندگی برای 6 ساعت آینده از (${times[closestIndex]}): $precipitationProbability%');
+          precipitationProbability = validHours > 0 ? (sumProbability / validHours).round() : 0;
+          print('میانگین احتمال بارندگی برای 12 ساعت آینده از (${times[closestIndex]}): $precipitationProbability%');
+        } else {
+          print('خطا: داده‌های احتمال بارندگی خالی است یا ایندکس نامعتبر است');
+          precipitationProbability = 0;
         }
+      } else {
+        print('خطا: نزدیک‌ترین زمان پیدا نشد');
+        precipitationProbability = 0;
       }
+    } else {
+      print('خطا: ساعت فعلی یا لیست زمان‌ها وجود ندارد');
+      precipitationProbability = 0;
     }
 
     // تبدیل timezone از رشته (مثل "Asia/Tehran") به عدد (offset ثانیه‌ای)
     final timezoneStr = json['timezone'] as String? ?? 'UTC';
     final timezoneOffset = _getTimezoneOffset(timezoneStr);
+
+    final elevation = json['elevation'] as double?;
+    print('Elevation from API in MeteoCurrentWeatherModel: $elevation');
+    print('ارتفاع از سطح دریا ذخیره‌شده: $elevation');
 
     return MeteoCurrentWeatherModel(
       name: name ?? json['city_name'] as String?,
@@ -113,6 +134,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       sunset: daily['sunset']?[0] as String?,
       uvIndex: uvIndex,
       precipitationProbability: precipitationProbability,
+      elevation: elevation,
     );
   }
 
@@ -122,7 +144,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       0: 'آفتابی',
       1: 'کمی ابری',
       2: 'ابری',
-      3: 'ابری کامل',
+      3: 'ابری',
       45: 'مه',
       48: 'مه شدید',
       51: 'ابری',

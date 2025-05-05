@@ -293,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       }
                       final sunrise = _formatTime(city.sys?.sunrise);
                       final sunset = _formatTime(city.sys?.sunset);
+                      print('ارتفاع دریافت‌شده برای نمایش: ${city.elevation}'); // لاگ برای دیباگ
                       return Column(
                         children: [
                           Container(
@@ -405,6 +406,16 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
                                     Column(
                                       children: [
+                                        const Text("جهت باد", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text(
+                                          _getWindDirection(city.wind?.deg ?? 0),
+                                          style: const TextStyle(color: Colors.white),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(color: Colors.white24, height: 30, width: 2, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                                    Column(
+                                      children: [
                                         const Text("فشار", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
                                         Text("${city.main?.pressure ?? 0} hPa", style: const TextStyle(color: Colors.white)),
                                       ],
@@ -414,6 +425,20 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       children: [
                                         const Text("اشعه UV", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
                                         Text("${city.uvIndex?.toStringAsFixed(1) ?? '0'}", style: const TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Text("ارتفاع از سطح دریا", style: TextStyle(fontFamily: "nikoo", fontSize: 18, color: Colors.yellow)),
+                                        Text(
+                                          "${city.elevation?.toStringAsFixed(0) ?? '0'} متر",
+                                          style: const TextStyle(color: Colors.white),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -519,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                     }
                     return const SizedBox.shrink();
                   },
-                ),
+                )
               ],
             ),
           ),
@@ -530,4 +555,17 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   @override
   bool get wantKeepAlive => true;
+}
+
+// تابع تبدیل زاویه به جهت
+String _getWindDirection(int degrees) {
+  if (degrees >= 337.5 || degrees < 22.5) return "شمال";
+  if (degrees >= 22.5 && degrees < 67.5) return "شمال‌شرقی";
+  if (degrees >= 67.5 && degrees < 112.5) return "شرق";
+  if (degrees >= 112.5 && degrees < 157.5) return "جنوب‌شرقی";
+  if (degrees >= 157.5 && degrees < 202.5) return "جنوب";
+  if (degrees >= 202.5 && degrees < 247.5) return "جنوب‌غربی";
+  if (degrees >= 247.5 && degrees < 292.5) return "غرب";
+  if (degrees >= 292.5 && degrees < 337.5) return "شمال‌غربی";
+  return "نامشخص";
 }

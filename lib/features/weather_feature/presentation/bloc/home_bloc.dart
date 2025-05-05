@@ -46,7 +46,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           });
         }
         if (dataState is DataSuccess) {
-          emit(state.copyWith(newCwStatus: CwCompleted(dataState.data)));
+          final meteoCurrentWeatherModel = dataState.data;
+          final elevation = meteoCurrentWeatherModel.elevation;
+          print('Elevation in HomeBloc before emitting: $elevation');
+          emit(state.copyWith(newCwStatus: CwCompleted(meteoCurrentWeatherModel)));
         } else {
           emit(state.copyWith(newCwStatus: CwError(dataState.error)));
         }

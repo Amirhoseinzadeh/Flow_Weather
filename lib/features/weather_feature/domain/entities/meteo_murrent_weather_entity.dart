@@ -9,7 +9,8 @@ class MeteoCurrentWeatherEntity extends Equatable {
   final Wind? wind;
   final List<Weather>? weather;
   final double? uvIndex;
-  final int? precipitationProbability; // احتمال بارندگی (درصد)
+  final int? precipitationProbability;
+  final double? elevation; // اضافه کردن ارتفاع از سطح دریا
 
   MeteoCurrentWeatherEntity({
     this.name,
@@ -21,10 +22,11 @@ class MeteoCurrentWeatherEntity extends Equatable {
     this.weather,
     this.uvIndex,
     this.precipitationProbability,
+    this.elevation,
   });
 
   @override
-  List<Object?> get props => [name, coord, sys, timezone, main, wind, weather, uvIndex, precipitationProbability];
+  List<Object?> get props => [name, coord, sys, timezone, main, wind, weather, uvIndex, precipitationProbability, elevation];
 
   @override
   bool get stringify => true;
