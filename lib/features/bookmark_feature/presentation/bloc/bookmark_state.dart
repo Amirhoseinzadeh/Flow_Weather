@@ -11,6 +11,7 @@ class BookmarkState extends Equatable {
   final GetCityStatus getCityStatus;
   final DeleteCityStatus deleteCityStatus;
   final UpdateCityStatus updateCityStatus;
+  final int? loadingIndex; // ایندکس شهری که در حال لودینگ هست
 
   const BookmarkState({
     required this.saveCityStatus,
@@ -18,6 +19,7 @@ class BookmarkState extends Equatable {
     required this.getCityStatus,
     required this.deleteCityStatus,
     required this.updateCityStatus,
+    this.loadingIndex,
   });
 
   factory BookmarkState.initial() {
@@ -27,6 +29,7 @@ class BookmarkState extends Equatable {
       getCityStatus: GetCityLoading(),
       deleteCityStatus: DeleteCityInitial(),
       updateCityStatus: UpdateCityInitial(),
+      loadingIndex: null,
     );
   }
 
@@ -36,6 +39,7 @@ class BookmarkState extends Equatable {
     GetCityStatus? newCityStatus,
     DeleteCityStatus? newDeleteStatus,
     UpdateCityStatus? newUpdateStatus,
+    int? loadingIndex,
   }) {
     return BookmarkState(
       saveCityStatus: newSaveStatus ?? saveCityStatus,
@@ -43,6 +47,7 @@ class BookmarkState extends Equatable {
       getCityStatus: newCityStatus ?? getCityStatus,
       deleteCityStatus: newDeleteStatus ?? deleteCityStatus,
       updateCityStatus: newUpdateStatus ?? updateCityStatus,
+      loadingIndex: loadingIndex,
     );
   }
 
@@ -53,5 +58,6 @@ class BookmarkState extends Equatable {
     getCityStatus,
     deleteCityStatus,
     updateCityStatus,
+    loadingIndex,
   ];
 }

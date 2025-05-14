@@ -94,5 +94,13 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
         emit(state.copyWith(newUpdateStatus: UpdateCityError('خطا در آپدیت شهر')));
       }
     });
+
+    on<LoadCityWeatherEvent>((event, emit) async {
+      emit(state.copyWith(loadingIndex: event.index));
+    });
+
+    on<ResetLoadingIndexEvent>((event, emit) async {
+      emit(state.copyWith(loadingIndex: null));
+    });
   }
 }

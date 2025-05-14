@@ -4,7 +4,7 @@ class HomeState extends Equatable {
   final CwStatus cwStatus;
   final FwStatus fwStatus;
   final AirQualityStatus aqStatus;
-  final bool isLocationLoading; // New field for location loading state
+  final bool isLocationLoading;
 
   HomeState({
     required this.cwStatus,

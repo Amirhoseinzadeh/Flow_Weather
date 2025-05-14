@@ -41,3 +41,13 @@ class UpdateCityEvent extends BookmarkEvent {
   @override
   List<Object?> get props => [city];
 }
+
+class LoadCityWeatherEvent extends BookmarkEvent {
+  final int index;
+  const LoadCityWeatherEvent(this.index);
+
+  @override
+  List<Object?> get props => [index];
+}
+
+class ResetLoadingIndexEvent extends BookmarkEvent {}

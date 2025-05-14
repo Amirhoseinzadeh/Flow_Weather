@@ -9,6 +9,7 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/home_blo
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 
 class BookmarkDrawerContent extends StatelessWidget {
   const BookmarkDrawerContent({super.key});
@@ -46,7 +47,6 @@ class BookmarkDrawerContent extends StatelessWidget {
                   // فعال کردن حالت لودینگ و درخواست موقعیت
                   context.read<HomeBloc>().add(const SetLocationLoading(true));
                   context.read<HomeBloc>().getCurrentLocation(context, forceRequest: true);
-                  Navigator.of(context).pop();
                 },
               );
             },
@@ -54,7 +54,7 @@ class BookmarkDrawerContent extends StatelessWidget {
           const Divider(color: Colors.white24),
           Expanded(
             child: BlocBuilder<BookmarkBloc, BookmarkState>(
-              buildWhen: (prev, curr) => prev.getAllCityStatus != curr.getAllCityStatus,
+              buildWhen: (prev, curr) => prev.getAllCityStatus != curr.getAllCityStatus || prev.loadingIndex != curr.loadingIndex,
               builder: (context, state) {
                 if (state.getAllCityStatus is GetAllCityLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -71,17 +71,33 @@ class BookmarkDrawerContent extends StatelessWidget {
                   itemCount: cities.length,
                   itemBuilder: (context, index) {
                     final city = cities[index];
+                    final isLoading = state.loadingIndex == index;
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ClipPath(
                         child: Container(
-                          width: width,
+                          width: width, // فرض می‌کنیم width از بالا تعریف شده
                           height: 55.0,
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.all(Radius.circular(20)),
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withOpacity(0.2), // پس‌زمینه اصلی
                           ),
-                          child: ListTile(
+                          child: isLoading
+                              ? Shimmer.fromColors(
+                            baseColor: Colors.grey[600]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(Radius.circular(20)),
+                                color: Colors.transparent, // رنگ پایه برای شیمر
+                              ),
+                              child: ListTile(
+                                title: Text(city.name, style: const TextStyle(color: Colors.white)),
+                                trailing: const Icon(Icons.remove_circle, color: Colors.redAccent),
+                              ),
+                            ),
+                          )
+                              : ListTile(
                             title: Text(city.name, style: const TextStyle(color: Colors.white)),
                             trailing: IconButton(
                               icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
@@ -96,8 +112,8 @@ class BookmarkDrawerContent extends StatelessWidget {
                             ),
                             onTap: () async {
                               print('نام شهر انتخاب‌شده: ${city.name}');
-                              await loadCityWeather(context, city.name);
-                              Navigator.of(context).pop();
+                              context.read<BookmarkBloc>().add(LoadCityWeatherEvent(index));
+                              await loadCityWeather(context, city.name, lat: city.lat, lon: city.lon);
                             },
                           ),
                         ),

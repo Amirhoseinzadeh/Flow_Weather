@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
 
@@ -83,7 +84,7 @@ class ForecastNextDaysWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
+                    ]
                   ),
                 ),
                 // دمای حداکثر
@@ -110,7 +111,7 @@ class ForecastNextDaysWidget extends StatelessWidget {
                     textAlign: TextAlign.right,
                   ),
                 ),
-              ],
+              ].animate(interval: 300.ms).scale(),
             ),
           );
         },

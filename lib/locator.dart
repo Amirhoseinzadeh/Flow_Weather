@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flow_weather/core/bloc/bottom_icon_cubit.dart';
+import 'package:flow_weather/core/bloc/detail_cubit.dart';
 import 'package:flow_weather/core/services/weather_service.dart'; // اضافه کردن WeatherService
 import 'package:flow_weather/features/bookmark_feature/data/data_source/local/city_model.dart';
 import 'package:flow_weather/features/bookmark_feature/data/data_source/repository/city_repositoryimpl.dart';
@@ -80,5 +81,6 @@ Future<void> setup() async {
     BookmarkBloc(locator(), locator(), locator(), locator(), locator()),
   );
   locator.registerSingleton<BottomIconCubit>(BottomIconCubit());
+  locator.registerSingleton<DetailCubit>(DetailCubit());
   locator.registerSingleton<BookmarkIconCubit>(BookmarkIconCubit());
 }
