@@ -43,3 +43,11 @@ class SetLocationLoading extends HomeEvent {
   @override
   List<Object> get props => [isLoading];
 }
+
+class SetCityLoading extends HomeEvent { // اضافه کردن رویداد جدید
+  final bool isLoading;
+  const SetCityLoading(this.isLoading);
+
+  @override
+  List<Object> get props => [isLoading];
+}

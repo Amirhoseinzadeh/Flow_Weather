@@ -8,7 +8,7 @@ class DotLoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: LoadingAnimationWidget.discreteCircle(
+        child: LoadingAnimationWidget.halfTriangleDot(
           size: 50,
           color: Colors.white,
         ),

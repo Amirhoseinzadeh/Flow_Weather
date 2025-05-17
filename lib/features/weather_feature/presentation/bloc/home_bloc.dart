@@ -26,11 +26,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   bool _permissionDeniedForever = false;
 
   HomeBloc(this.getCurrentWeatherUseCase, this.getForecastWeatherUseCase, this.getAirQualityUseCase)
-      : super(HomeState(cwStatus: CwLoading(), fwStatus: FwLoading(), aqStatus: AirQualityLoading(), isLocationLoading: false)) {
+      : super( HomeState(cwStatus: CwLoading(), fwStatus: FwLoading(), aqStatus: AirQualityLoading(), isLocationLoading: false, isCityLoading: false)) {
     print('HomeBloc initialized with WeatherService: $weatherService');
 
     on<LoadCwEvent>((event, emit) async {
-      emit(state.copyWith(newCwStatus: CwLoading(), isLocationLoading: true));
+      emit(state.copyWith(newCwStatus: CwLoading(), isCityLoading: true));
       try {
         DataState dataState;
         if (event.lat != null && event.lon != null) {
@@ -46,13 +46,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           final meteoCurrentWeatherModel = dataState.data;
           final elevation = meteoCurrentWeatherModel.elevation ?? 0;
           print('Elevation in HomeBloc before emitting: $elevation');
-          emit(state.copyWith(newCwStatus: CwCompleted(meteoCurrentWeatherModel), isLocationLoading: false));
+          emit(state.copyWith(newCwStatus: CwCompleted(meteoCurrentWeatherModel), isCityLoading: false));
         } else {
-          emit(state.copyWith(newCwStatus: CwError(dataState.error), isLocationLoading: false));
+          emit(state.copyWith(newCwStatus: CwError(dataState.error), isCityLoading: false));
         }
       } catch (e) {
         print('Error loading current weather: $e');
-        emit(state.copyWith(newCwStatus: CwError(e.toString()), isLocationLoading: false));
+        emit(state.copyWith(newCwStatus: CwError(e.toString()), isCityLoading: false));
       }
     });
 
@@ -100,6 +100,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     on<SetLocationLoading>((event, emit) {
       emit(state.copyWith(isLocationLoading: event.isLoading));
+    });
+
+    on<SetCityLoading>((event, emit) {
+      emit(state.copyWith(isCityLoading: event.isLoading));
     });
   }
 
@@ -161,6 +165,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       ).timeout(const Duration(seconds: 10), onTimeout: () {
+        print('Timeout occurred while getting location');
         throw TimeoutException('گرفتن موقعیت مکانی بیش از حد طول کشید');
       });
       print('موقعیت دریافت شد: lat=${position.latitude}, lon=${position.longitude}');
@@ -196,6 +201,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$e')),
       );
+    } finally {
+      add(const SetLocationLoading(false)); // همیشه لودینگ رو غیرفعال کن
     }
   }
 }

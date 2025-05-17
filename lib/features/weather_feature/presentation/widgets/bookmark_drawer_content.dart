@@ -76,20 +76,20 @@ class BookmarkDrawerContent extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: ClipPath(
                         child: Container(
-                          width: width, // فرض می‌کنیم width از بالا تعریف شده
+                          width: width,
                           height: 55.0,
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.all(Radius.circular(20)),
-                            color: Colors.grey.withOpacity(0.2), // پس‌زمینه اصلی
+                            color: Colors.grey.withOpacity(0.2),
                           ),
                           child: isLoading
                               ? Shimmer.fromColors(
-                            baseColor: Colors.grey[600]!,
-                            highlightColor: Colors.grey[100]!,
+                            baseColor: Colors.grey[800]!,
+                            highlightColor: Colors.grey[300]!,
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.all(Radius.circular(20)),
-                                color: Colors.transparent, // رنگ پایه برای شیمر
+                                color: Colors.white.withOpacity(.2),
                               ),
                               child: ListTile(
                                 title: Text(city.name, style: const TextStyle(color: Colors.white)),
@@ -114,6 +114,7 @@ class BookmarkDrawerContent extends StatelessWidget {
                               print('نام شهر انتخاب‌شده: ${city.name}');
                               context.read<BookmarkBloc>().add(LoadCityWeatherEvent(index));
                               await loadCityWeather(context, city.name, lat: city.lat, lon: city.lon);
+                              // دراور توسط HomeScreen بسته می‌شه
                             },
                           ),
                         ),

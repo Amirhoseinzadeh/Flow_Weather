@@ -112,11 +112,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         BlocProvider.value(value: _detailCubit),
       ],
       child: BlocListener<HomeBloc, HomeState>(
-        listenWhen: (previous, current) => previous.isLocationLoading != current.isLocationLoading,
+        listenWhen: (previous, current) => previous.cwStatus != current.cwStatus,
         listener: (context, state) {
-          if (!state.isLocationLoading && _scaffoldKey.currentState?.isDrawerOpen == true) {
-            Navigator.pop(context); // Close drawer after loading
-            context.read<BookmarkBloc>().add(ResetLoadingIndexEvent()); // Reset loading index
+          if (state.cwStatus is CwCompleted && _scaffoldKey.currentState?.isDrawerOpen == true) {
+            Navigator.pop(context); // Close drawer after current weather loading completes
+            print('Drawer closed after CwCompleted');
           }
         },
         child: Scaffold(
@@ -242,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             return const SizedBox.shrink();
                           },
                         ),
-                      ].animate(interval: 300.ms).scale(),
+                      ].animate(interval: 200.ms).scale(),
                     ),
                   ),
                   BlocBuilder<HomeBloc, HomeState>(
@@ -624,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       );
                                     },
                                   ),
-                                ].animate(interval: 300.ms).scale(),
+                                ].animate(interval: 200.ms).scale(),
                               ),
                             ),
                             const Divider(color: Colors.white12, thickness: 2),
@@ -690,13 +690,13 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                       ),
                                                       const SizedBox(height: 2),
                                                       Text('${h.temperature.round()}°', style: const TextStyle(color: Colors.white)),
-                                                    ].animate(interval: 1000.ms).scale(),
+                                                    ].animate(interval: 200.ms).scale(),
                                                   ),
                                                 );
                                               },
                                             ),
                                           ),
-                                        ].animate(interval: 300.ms).scale(),
+                                        ].animate(interval: 200.ms).scale(),
                                       ),
                                     ),
                                     const Divider(color: Colors.white12, thickness: 2),
@@ -725,11 +725,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         ],
                                       ),
                                     ),
-                                  ].animate(interval: 300.ms).scale(),
+                                  ].animate(interval: 200.ms).scale(),
                                 );
                               },
                             ),
-                          ].animate(interval: 300.ms).scale(),
+                          ].animate(interval: 200.ms).scale(),
                         );
                       }
                       return const SizedBox.shrink();

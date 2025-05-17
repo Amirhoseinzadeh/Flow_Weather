@@ -5,8 +5,8 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/home_blo
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
 
 Future<void> loadCityWeather(BuildContext context, String cityName, {double? lat, double? lon}) async {
-  // فعال کردن حالت لودینگ
-  context.read<HomeBloc>().add(const SetLocationLoading(true));
+  // فعال کردن حالت لودینگ برای شهر
+  context.read<HomeBloc>().add(const SetCityLoading(true));
 
   // فراخوانی رویدادهای لازم برای لود کردن داده‌های شهر
   final params = lat != null && lon != null ? ForecastParams(lat, lon) : null;
@@ -16,5 +16,5 @@ Future<void> loadCityWeather(BuildContext context, String cityName, {double? lat
     context.read<HomeBloc>().add(LoadAirQualityEvent(params));
   }
 
-  // نیازی به SetLocationLoading(false) نیست، چون توی LoadCwEvent مدیریت می‌شه
+  // نیازی به SetCityLoading(false) نیست، چون توی LoadCwEvent مدیریت می‌شه
 }
