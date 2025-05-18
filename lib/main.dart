@@ -7,12 +7,14 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/home_blo
 import 'package:flow_weather/features/weather_feature/presentation/screens/home_screen.dart';
 import 'package:flow_weather/locator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // final notificationService = NotificationService();
   // await notificationService.initialize();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
 
   await setup();

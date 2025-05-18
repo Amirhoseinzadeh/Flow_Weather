@@ -24,7 +24,7 @@ class BookMarkIcon extends StatelessWidget {
 
         return IconButton(
           icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 50),
+            duration: const Duration(milliseconds: 100),
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,

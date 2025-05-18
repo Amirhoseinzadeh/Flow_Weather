@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   style: const TextStyle(fontFamily: "nazanin", color: Colors.white),
                                   decoration: const InputDecoration(
                                     hintText: "جستجوی شهر...",
-                                    hintStyle: TextStyle(fontFamily: "nazanin", color: Colors.white70),
+                                    hintStyle: TextStyle(color: Colors.white70),
                                     enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white38)),
                                     focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
                                   ),
@@ -312,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   const SizedBox(height: 8),
                                   Text(
                                     city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
-                                    style: const TextStyle(fontFamily: "nazanin", fontSize: 22, color: Colors.white70, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontFamily: "Titr", fontSize: 20, color: Colors.white70),
                                   ),
                                   SizedBox(
                                     height: 100,
@@ -328,11 +328,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         children: [
                                           const Text(
                                             "حداقل دما",
-                                            style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold),
+                                            style: TextStyle(fontFamily: "lalezar", color: Colors.white54, fontSize: 14),
                                           ),
                                           Text(
                                             "${minTemp.round()}°",
-                                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                                           ),
                                         ],
                                       ),
@@ -344,11 +344,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         children: [
                                           const Text(
                                             "حداکثر دما",
-                                            style: TextStyle(fontFamily: "nazanin", color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold),
+                                            style: TextStyle(fontFamily: "lalezar", color: Colors.white54, fontSize: 14),
                                           ),
                                           Text(
                                             "${maxTemp.round()}°",
-                                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                                           ),
                                         ],
                                       ),
@@ -366,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               style: TextStyle(
                                                 fontFamily: "entezar",
                                                 fontSize: 22,
-                                                color: Colors.white,
+                                                color: Colors.yellow,
                                               ),
                                             ),
                                             const SizedBox(width: 8),
@@ -395,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellow,
+                                                      color: Colors.yellowAccent,
                                                     ),
                                                   ),
                                                   Text(
@@ -407,6 +407,123 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               Container(
                                                 color: Colors.white24,
                                                 height: 31,
+                                                width: 2,
+                                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "حداقل دما",
+                                                    style: TextStyle(fontFamily: "nikoo",
+                                                      fontSize: 18,
+                                                      color: Colors.yellowAccent,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${minTemp.round()}°",
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                              // Column(
+                                              //   children: [
+                                              //     const Text(
+                                              //       "احتمال بارندگی",
+                                              //       style: TextStyle(
+                                              //         fontFamily: "nikoo",
+                                              //         fontSize: 18,
+                                              //         color: Colors.yellow,
+                                              //       ),
+                                              //     ),
+                                              //     Text(
+                                              //       "${city.precipitationProbability ?? 0}%",
+                                              //       style: const TextStyle(color: Colors.white),
+                                              //     ),
+                                              //   ],
+                                              // ),
+                                              Container(
+                                                color: Colors.white24,
+                                                height: 30,
+                                                width: 2,
+                                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "حداکثر دما",
+                                                    style: TextStyle(fontFamily: "nikoo",
+                                                      fontSize: 18,
+                                                      color: Colors.yellowAccent,),
+                                                  ),
+                                                  Text(
+                                                    "${maxTemp.round()}°",
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                              Container(
+                                                color: Colors.white24,
+                                                height: 30,
+                                                width: 2,
+                                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "رطوبت",
+                                                    style: TextStyle(
+                                                      fontFamily: "nikoo",
+                                                      fontSize: 18,
+                                                      color: Colors.yellowAccent,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${city.main?.humidity ?? 0}%",
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              // Column(
+                                              //   children: [
+                                              //     const Text(
+                                              //       "جهت باد",
+                                              //       style: TextStyle(
+                                              //         fontFamily: "nikoo",
+                                              //         fontSize: 18,
+                                              //         color: Colors.yellow,
+                                              //       ),
+                                              //     ),
+                                              //     Text(
+                                              //       _getWindDirection(city.wind?.deg ?? 0),
+                                              //       style: const TextStyle(color: Colors.white),
+                                              //     ),
+                                              //   ],
+                                              // ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "فشار",
+                                                    style: TextStyle(
+                                                      fontFamily: "nikoo",
+                                                      fontSize: 18,
+                                                      color: Colors.yellow,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${city.main?.pressure ?? 0} hPa",
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                              Container(
+                                                color: Colors.white24,
+                                                height: 30,
                                                 width: 2,
                                                 margin: const EdgeInsets.symmetric(horizontal: 10),
                                               ),
@@ -452,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               Column(
                                                 children: [
                                                   const Text(
-                                                    "احتمال بارندگی",
+                                                    "اشعه UV",
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
@@ -460,39 +577,32 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     ),
                                                   ),
                                                   Text(
-                                                    "${city.precipitationProbability ?? 0}%",
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                              Container(
-                                                color: Colors.white24,
-                                                height: 30,
-                                                width: 2,
-                                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const Text(
-                                                    "رطوبت",
-                                                    style: TextStyle(
-                                                      fontFamily: "nikoo",
-                                                      fontSize: 18,
-                                                      color: Colors.yellow,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${city.main?.humidity ?? 0}%",
+                                                    "${city.uvIndex?.toStringAsFixed(1) ?? '0'}",
                                                     style: const TextStyle(color: Colors.white),
                                                   ),
                                                 ],
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 10),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
+                                              // Column(
+                                              //   children: [
+                                              //     const Text(
+                                              //       "ارتفاع از سطح دریا",
+                                              //       style: TextStyle(
+                                              //         fontFamily: "nikoo",
+                                              //         fontSize: 18,
+                                              //         color: Colors.yellow,
+                                              //       ),
+                                              //     ),
+                                              //     Text(
+                                              //       "${city.elevation?.toStringAsFixed(0) ?? '0'} متر",
+                                              //       style: const TextStyle(color: Colors.white),
+                                              //     ),
+                                              //   ],
+                                              // ),
                                               Column(
                                                 children: [
                                                   const Text(
@@ -500,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.orangeAccent,
+                                                      color: Colors.orangeAccent
                                                     ),
                                                   ),
                                                   Text(
@@ -522,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.orangeAccent,
+                                                      color: Colors.orangeAccent
                                                     ),
                                                   ),
                                                   Text(
@@ -531,95 +641,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                   ),
                                                 ],
                                               ),
-                                              Container(
-                                                color: Colors.white24,
-                                                height: 30,
-                                                width: 2,
-                                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const Text(
-                                                    "جهت باد",
-                                                    style: TextStyle(
-                                                      fontFamily: "nikoo",
-                                                      fontSize: 18,
-                                                      color: Colors.yellow,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    _getWindDirection(city.wind?.deg ?? 0),
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                              Container(
-                                                color: Colors.white24,
-                                                height: 30,
-                                                width: 2,
-                                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const Text(
-                                                    "فشار",
-                                                    style: TextStyle(
-                                                      fontFamily: "nikoo",
-                                                      fontSize: 18,
-                                                      color: Colors.yellow,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${city.main?.pressure ?? 0} hPa",
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                              Container(
-                                                color: Colors.white24,
-                                                height: 30,
-                                                width: 2,
-                                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const Text(
-                                                    "اشعه UV",
-                                                    style: TextStyle(
-                                                      fontFamily: "nikoo",
-                                                      fontSize: 18,
-                                                      color: Colors.yellow,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${city.uvIndex?.toStringAsFixed(1) ?? '0'}",
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
                                             ],
                                           ),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Column(
-                                                children: [
-                                                  const Text(
-                                                    "ارتفاع از سطح دریا",
-                                                    style: TextStyle(
-                                                      fontFamily: "nikoo",
-                                                      fontSize: 18,
-                                                      color: Colors.yellow,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${city.elevation?.toStringAsFixed(0) ?? '0'} متر",
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
+                                          const SizedBox(height: 10),
                                         ],
                                       );
                                     },
@@ -627,7 +651,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 ].animate(interval: 200.ms).scale(),
                               ),
                             ),
-                            const Divider(color: Colors.white12, thickness: 2),
+                            // const Divider(color: Colors.white12, thickness: 2),
                             BlocBuilder<HomeBloc, HomeState>(
                               buildWhen: (p, c) => p.fwStatus != c.fwStatus,
                               builder: (context, s2) {
@@ -646,26 +670,27 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 return Column(
                                   children: [
                                     Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.symmetric(vertical: 6),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.withOpacity(.1),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                "پیش‌بینی ساعتی",
-                                                style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
-                                              ),
-                                              Icon(Icons.access_time_outlined, color: Colors.grey.shade200, size: 30),
-                                            ],
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 36),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "پیش‌بینی ساعتی",
+                                                  style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
+                                                ),
+                                                Icon(Icons.access_time_outlined, color: Colors.grey.shade200, size: 30),
+                                              ],
+                                            ),
                                           ),
-                                          const SizedBox(height: 10),
                                           SizedBox(
                                             height: 100,
                                             child: ListView.builder(
@@ -701,24 +726,27 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     ),
                                     const Divider(color: Colors.white12, thickness: 2),
                                     Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                                      padding: const EdgeInsets.all(16),
+                                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+                                      padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.withOpacity(.2),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                "پیش‌بینی ۱۴ روزه",
-                                                style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
-                                              ),
-                                              Icon(Icons.calendar_month_sharp, color: Colors.grey.shade300, size: 30),
-                                            ],
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "پیش‌بینی ۱۴ روزه",
+                                                  style: TextStyle(fontFamily: "entezar", fontSize: 22, color: Colors.white),
+                                                ),
+                                                Icon(Icons.calendar_month_sharp, color: Colors.grey.shade300, size: 30),
+                                              ],
+                                            ),
                                           ),
                                           const SizedBox(height: 10),
                                           ForecastNextDaysWidget(forecastDays: forecast.days),
@@ -748,14 +776,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   bool get wantKeepAlive => true;
 }
 
-String _getWindDirection(int degrees) {
-  if (degrees >= 337.5 || degrees < 22.5) return "شمال";
-  if (degrees >= 22.5 && degrees < 67.5) return "شمال‌شرقی";
-  if (degrees >= 67.5 && degrees < 112.5) return "شرق";
-  if (degrees >= 112.5 && degrees < 157.5) return "جنوب‌شرقی";
-  if (degrees >= 157.5 && degrees < 202.5) return "جنوب";
-  if (degrees >= 202.5 && degrees < 247.5) return "جنوب‌غربی";
-  if (degrees >= 247.5 && degrees < 292.5) return "غرب";
-  if (degrees >= 292.5 && degrees < 337.5) return "شمال‌غربی";
-  return "نامشخص";
-}
+// String _getWindDirection(int degrees) {
+//   if (degrees >= 337.5 || degrees < 22.5) return "شمال";
+//   if (degrees >= 22.5 && degrees < 67.5) return "شمال‌شرقی";
+//   if (degrees >= 67.5 && degrees < 112.5) return "شرق";
+//   if (degrees >= 112.5 && degrees < 157.5) return "جنوب‌شرقی";
+//   if (degrees >= 157.5 && degrees < 202.5) return "جنوب";
+//   if (degrees >= 202.5 && degrees < 247.5) return "جنوب‌غربی";
+//   if (degrees >= 247.5 && degrees < 292.5) return "غرب";
+//   if (degrees >= 292.5 && degrees < 337.5) return "شمال‌غربی";
+//   return "نامشخص";
+// }

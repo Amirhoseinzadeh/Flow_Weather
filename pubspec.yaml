@@ -121,6 +121,10 @@ flutter:
       fonts:
         - asset: assets/fonts/entezar.ttf
 
+    - family: titraj
+      fonts:
+        - asset: assets/fonts/titraj2.ttf
+
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
