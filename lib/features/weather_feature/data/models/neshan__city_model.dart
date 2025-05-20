@@ -2,7 +2,7 @@
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart';
 
 class NeshanCityModel extends NeshanCityEntity {
-  NeshanCityModel({
+  const NeshanCityModel({
     super.count,
     super.items,
   });

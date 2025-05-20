@@ -32,7 +32,7 @@ class AirQualityCompleted extends AirQualityStatus {
 class AirQualityError extends AirQualityStatus {
   final String? message;
 
-  AirQualityError(this.message);
+  const AirQualityError(this.message);
 
   @override
   List<Object?> get props => [message];

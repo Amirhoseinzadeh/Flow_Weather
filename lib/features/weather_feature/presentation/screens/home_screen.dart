@@ -82,13 +82,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return BlocListener<HomeBloc, HomeState>(
       listener: (context, state) {
-        // بستن دراور فقط وقتی لودینگ (موقعیت یا شهر) تموم شده باشه
+        final navigator = Navigator.of(context);
         if ((state.cwStatus is CwCompleted || state.cwStatus is CwError) &&
             !state.isLocationLoading &&
             !state.isCityLoading &&
             _scaffoldKey.currentState?.isDrawerOpen == true) {
           Future.delayed(const Duration(milliseconds: 200), () {
-            Navigator.pop(context);
+            navigator.pop();
           });
         }
         if (state.errorMessage != null) {
@@ -134,7 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           _scaffoldKey.currentState?.openDrawer();
                         },
                       ),
-                      Expanded(
+                      SizedBox(
+                        width: width * 0.7,
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: TypeAheadField<neshan.NeshanCityItem>(
@@ -221,9 +222,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           if (state.cwStatus is CwLoading) {
                             return const SizedBox(
-                              width: 26,
-                              height: 26,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
                             );
                           }
                           return const SizedBox.shrink();

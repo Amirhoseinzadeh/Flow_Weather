@@ -20,7 +20,6 @@ class BookMarkIcon extends StatelessWidget {
           final city = (state.getCityStatus as GetCityCompleted).city;
           isBookmarked = city != null && city.name == name;
         }
-        print('BookMarkIcon rebuilt: isBookmarked = $isBookmarked for city $name');
 
         return IconButton(
           icon: AnimatedSwitcher(
@@ -42,7 +41,6 @@ class BookMarkIcon extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            print('Bookmark icon tapped for city: $name, isBookmarked: $isBookmarked');
             if (isBookmarked) {
               context.read<BookmarkBloc>().add(DeleteCityEvent(name));
             } else {

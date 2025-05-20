@@ -5,7 +5,7 @@ class NeshanCityEntity extends Equatable {
   final int? count;
   final List<NeshanCityItem>? items;
 
-  NeshanCityEntity({
+  const NeshanCityEntity({
     this.count,
     this.items,
   });
@@ -22,7 +22,7 @@ class NeshanCityItem extends Equatable {
   final String? address;
   final Location? location;
 
-  NeshanCityItem({
+  const NeshanCityItem({
     this.title,
     this.address,
     this.location,
@@ -39,7 +39,7 @@ class Location extends Equatable {
   final double? x;
   final double? y;
 
-  Location({
+  const Location({
     this.x,
     this.y,
   });

@@ -12,7 +12,7 @@ class MeteoCurrentWeatherEntity extends Equatable {
   final int? precipitationProbability;
   final double? elevation; // اضافه کردن ارتفاع از سطح دریا
 
-  MeteoCurrentWeatherEntity({
+  const MeteoCurrentWeatherEntity({
     this.name,
     this.coord,
     this.sys,
@@ -36,7 +36,7 @@ class Coord extends Equatable {
   final double? lat;
   final double? lon;
 
-  Coord({this.lat, this.lon});
+  const Coord({this.lat, this.lon});
 
   @override
   List<Object?> get props => [lat, lon];
@@ -49,7 +49,7 @@ class Sys extends Equatable {
   final String? sunrise;
   final String? sunset;
 
-  Sys({this.sunrise, this.sunset});
+  const Sys({this.sunrise, this.sunset});
 
   @override
   List<Object?> get props => [sunrise, sunset];
@@ -63,7 +63,7 @@ class Main extends Equatable {
   final int? humidity;
   final int? pressure;
 
-  Main({this.temp, this.humidity, this.pressure});
+  const Main({this.temp, this.humidity, this.pressure});
 
   @override
   List<Object?> get props => [temp, humidity, pressure];
@@ -76,7 +76,7 @@ class Wind extends Equatable {
   final double? speed;
   final int? deg;
 
-  Wind({this.speed, this.deg});
+  const Wind({this.speed, this.deg});
 
   @override
   List<Object?> get props => [speed, deg];
@@ -89,7 +89,7 @@ class Weather extends Equatable {
   final int? id;
   final String? description;
 
-  Weather({this.id, this.description});
+  const Weather({this.id, this.description});
 
   @override
   List<Object?> get props => [id, description];
