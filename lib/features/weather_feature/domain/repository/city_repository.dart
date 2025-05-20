@@ -1,5 +1,5 @@
 import 'package:flow_weather/core/resources/data_state.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/city.dart';
 
 
 abstract class CityRepository {

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/save_city_status.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/update_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/save_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/update_city_status.dart';
 import 'delete_city_status.dart' show DeleteCityInitial, DeleteCityStatus;
 import 'get_all_city_status.dart' show GetAllCityLoading, GetAllCityStatus;
 import 'get_city_status.dart' show GetCityLoading, GetCityStatus;

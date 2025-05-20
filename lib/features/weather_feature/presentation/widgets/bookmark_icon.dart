@@ -1,10 +1,10 @@
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/city.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_event.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_state.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/get_city_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_city_status.dart';
 
 class BookMarkIcon extends StatelessWidget {
   final String name;
@@ -48,7 +48,6 @@ class BookMarkIcon extends StatelessWidget {
             } else {
               context.read<BookmarkBloc>().add(SaveCityEvent(City(name: name)));
             }
-            // دوباره وضعیت شهر رو بررسی کن تا آیکون آپدیت بشه
             context.read<BookmarkBloc>().add(FindCityByNameEvent(name));
           },
         );

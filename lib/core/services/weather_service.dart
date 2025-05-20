@@ -7,10 +7,9 @@ class WeatherService {
   WeatherService();
 
   Future<Map<String, double>> getCoordinatesFromCityName(String cityName) async {
-    // این فقط یه نمونه‌ست، باید با API واقعی جایگزین بشه
+
     try {
-      // مثلاً فراخوانی یه API برای گرفتن مختصات
-      return {'latitude': 35.6892, 'longitude': 51.3890}; // مختصات تهران
+      return {'latitude': 35.6892, 'longitude': 51.3890};
     } catch (e) {
       throw Exception('Failed to get coordinates: $e');
     }

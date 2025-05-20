@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:flow_weather/core/params/ForecastParams.dart';
+import 'package:flow_weather/core/params/forecast_params.dart';
 import 'package:flow_weather/core/utils/constants.dart';
 import 'package:flow_weather/features/weather_feature/data/models/air_quality_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/meteo_current_weather_model.dart';
@@ -51,7 +51,6 @@ class ApiProvider {
 
   Future<neshan.NeshanCityItem?> getCityByCoordinates(double lat, double lon) async {
     try {
-      print('در حال ارسال درخواست به API نشان برای مختصات: lat=$lat, lon=$lon');
       var response = await _dio.get(
         "https://api.neshan.org/v2/reverse",
         queryParameters: {
@@ -67,7 +66,6 @@ class ApiProvider {
         throw TimeoutException('درخواست به API نشان بیش از حد طول کشید');
       });
 
-      print('پاسخ دریافت‌شده از API نشان: ${response.statusCode} - ${response.data}');
       if (response.statusCode == 200) {
         final data = response.data;
         String cityName = data['city'] ??
@@ -79,18 +77,15 @@ class ApiProvider {
           location: neshan.Location(x: lon, y: lat),
         );
       } else {
-        print('خطا در دریافت نام شهر از API نشان: وضعیت ${response.statusCode}');
         return await _getCityByGeocoding(lat, lon);
       }
     } catch (e) {
-      print('خطا در getCityByCoordinates: $e');
       return await _getCityByGeocoding(lat, lon);
     }
   }
 
   Future<neshan.NeshanCityItem?> _getCityByGeocoding(double lat, double lon) async {
     try {
-      print('تلاش برای دریافت نام شهر با geocoding...');
       List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(lat, lon)
           .timeout(const Duration(seconds: 5), onTimeout: () {
         throw TimeoutException('درخواست geocoding بیش از حد طول کشید');
@@ -100,14 +95,12 @@ class ApiProvider {
             placemarks.first.subAdministrativeArea ??
             'موقعیت نامشخص';
         String address = placemarks.first.street ?? 'آدرس نامشخص';
-        print('نام شهر از geocoding: $cityName');
         return neshan.NeshanCityItem(
           title: cityName,
           address: address,
           location: neshan.Location(x: lon, y: lat),
         );
       } else {
-        print('هیچ اطلاعاتی از geocoding دریافت نشد');
         return neshan.NeshanCityItem(
           title: 'موقعیت نامشخص',
           address: 'آدرس نامشخص',
@@ -115,7 +108,6 @@ class ApiProvider {
         );
       }
     } catch (e) {
-      print('خطا در geocoding: $e');
       return neshan.NeshanCityItem(
         title: 'موقعیت نامشخص',
         address: 'آدرس نامشخص',
@@ -156,8 +148,6 @@ class ApiProvider {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('پاسخ API برای $cityName با مختصات lat=$usedLat, lon=$usedLon: ${response.data}');
-      print('احتمال بارندگی ساعتی: ${response.data['hourly']['precipitation_probability']}');
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
@@ -181,7 +171,6 @@ class ApiProvider {
       }
       throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
-      print('خطا در callCurrentWeather: $e');
       throw Exception('خطا در دریافت آب‌وهوای کنونی: $e');
     }
   }
@@ -209,8 +198,6 @@ class ApiProvider {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('پاسخ API برای مختصات lat=$lat, lon=$lon: ${response.data}');
-      print('احتمال بارندگی ساعتی: ${response.data['hourly']['precipitation_probability']}');
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
@@ -234,7 +221,6 @@ class ApiProvider {
       }
       throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
-      print('خطا در getCurrentWeatherByCoordinates: $e');
       throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: $e');
     }
   }
@@ -283,10 +269,8 @@ class ApiProvider {
           'timezone': 'Asia/Tehran',
         },
       ).timeout(const Duration(seconds: 10));
-      print('پاسخ خام API برای مختصات (${params.lat}, ${params.lon}): ${response.data}');
       return AirQualityModel.fromJson(response.data);
     } catch (e) {
-      print('خطا در دریافت داده‌های کیفیت هوا: $e');
       throw Exception('خطا در دریافت داده‌های کیفیت هوا: $e');
     }
   }

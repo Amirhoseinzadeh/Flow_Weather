@@ -1,8 +1,7 @@
-import 'package:flow_weather/config/notification/notification_service.dart';
 import 'package:flow_weather/core/bloc/bottom_icon_cubit.dart';
 import 'package:flow_weather/core/bloc/detail_cubit.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_icon_cubit.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_icon_cubit.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flow_weather/features/weather_feature/presentation/screens/home_screen.dart';
 import 'package:flow_weather/generated/app_localizations.dart';

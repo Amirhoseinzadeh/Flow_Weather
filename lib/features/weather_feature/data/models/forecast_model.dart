@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
 
 class ForecastModel extends ForecastEntity {
-  ForecastModel({
-    required List<ForecastDayEntity> days,
-    required List<ForecastHourEntity> hours,
-  }) : super(days: days, hours: hours);
+  const ForecastModel({
+    required super.days,
+    required super.hours,
+  });
 
   factory ForecastModel.fromJson(Map<String, dynamic> json) {
     // --- نگاشت روزانه ---

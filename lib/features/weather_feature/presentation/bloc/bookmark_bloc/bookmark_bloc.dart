@@ -1,17 +1,17 @@
 import 'package:bloc/bloc.dart';
 import 'package:flow_weather/core/resources/data_state.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/use_cases/delete_city_usecase.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/use_cases/find_city_by_name_use_case.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/use_cases/get_all_city_usecase.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/use_cases/save_city_usecase.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/use_cases/update_city_usecase.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/delete_city_status.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_all_city_status.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_city_status.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/save_city_status.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/update_city_status.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/bookmark_use_cases/delete_city_usecase.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/bookmark_use_cases/find_city_by_name_use_case.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/bookmark_use_cases/get_all_city_usecase.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/bookmark_use_cases/save_city_usecase.dart';
+import 'package:flow_weather/features/weather_feature/domain/use_cases/bookmark_use_cases/update_city_usecase.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_event.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_state.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/delete_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/get_all_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/get_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/save_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/update_city_status.dart';
 
 class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
   final SaveCityUseCase _saveCityUseCase;

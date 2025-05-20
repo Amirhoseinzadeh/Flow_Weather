@@ -1,7 +1,6 @@
-import 'package:flow_weather/core/params/ForecastParams.dart';
+import 'package:flow_weather/core/params/forecast_params.dart';
 import 'package:flow_weather/core/resources/data_state.dart';
 import 'package:flow_weather/features/weather_feature/data/data_source/remote/api_provider.dart';
-import 'package:flow_weather/features/weather_feature/data/models/air_quality_model.dart';
 import 'package:flow_weather/features/weather_feature/data/models/forecast_model.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/air_quality_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
@@ -20,7 +19,6 @@ class WeatherRepositoryImpl extends WeatherRepository {
       MeteoCurrentWeatherEntity currentWeatherEntity = await _apiProvider.callCurrentWeather(cityName);
       return DataSuccess(currentWeatherEntity);
     } catch (e) {
-      print(e.toString());
       return DataFailed("please check your connection...");
     }
   }
@@ -31,7 +29,6 @@ class WeatherRepositoryImpl extends WeatherRepository {
       MeteoCurrentWeatherEntity currentWeatherEntity = await _apiProvider.getCurrentWeatherByCoordinates(lat, lon);
       return DataSuccess(currentWeatherEntity);
     } catch (e) {
-      print(e.toString());
       return DataFailed("please check your connection...");
     }
   }
@@ -53,7 +50,6 @@ class WeatherRepositoryImpl extends WeatherRepository {
       NeshanCityEntity suggestCityEntity = await _apiProvider.sendRequestCitySuggestion(cityName);
       return suggestCityEntity.items ?? [];
     } catch (e) {
-      print(e.toString());
       throw Exception("please check your connection...");
     }
   }

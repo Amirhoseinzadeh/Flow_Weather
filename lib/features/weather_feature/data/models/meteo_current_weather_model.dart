@@ -2,10 +2,10 @@ import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murr
 
 class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
   MeteoCurrentWeatherModel({
-    String? name,
-    Coord? coord,
+    super.name,
+    super.coord,
     Sys? sys,
-    int? timezone,
+    super.timezone,
     double? temperature,
     int? humidity,
     double? pressure,
@@ -15,14 +15,11 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     String? description,
     String? sunrise,
     String? sunset,
-    double? uvIndex,
-    int? precipitationProbability,
-    double? elevation,
+    super.uvIndex,
+    super.precipitationProbability,
+    super.elevation,
   }) : super(
-    name: name,
-    coord: coord,
     sys: sys ?? Sys(sunrise: sunrise, sunset: sunset),
-    timezone: timezone,
     main: Main(
       temp: temperature,
       humidity: humidity,
@@ -35,12 +32,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     weather: weatherCode != null && description != null
         ? [Weather(id: weatherCode, description: description)]
         : [],
-    uvIndex: uvIndex,
-    precipitationProbability: precipitationProbability,
-    elevation: elevation,
-  ) {
-    print('MeteoCurrentWeatherModel created with elevation: $elevation');
-  }
+  );
 
   factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord, String? currentHour}) {
     final current = json['current'] ?? {};
@@ -48,19 +40,17 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     final daily = json['daily'] ?? {};
     final weatherCode = current['weathercode'] as int? ?? 0;
 
-    // پیدا کردن UV Index و احتمال بارندگی
+
     double? uvIndex;
     int? precipitationProbability;
 
     if (currentHour != null && hourly['time'] != null) {
       final times = (hourly['time'] as List<dynamic>?)?.cast<String>() ?? [];
-      print('ساعت فعلی: $currentHour');
-      print('لیست زمان‌ها: $times');
 
-      // پیدا کردن نزدیک‌ترین زمان به ساعت فعلی
+
       DateTime currentDateTime = DateTime.parse(currentHour);
       int closestIndex = -1;
-      Duration minDifference = Duration(days: 365); // یک مقدار اولیه بزرگ
+      Duration minDifference = Duration(days: 365);
 
       for (int i = 0; i < times.length; i++) {
         DateTime timeDate = DateTime.parse(times[i]);
@@ -71,50 +61,36 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
         }
       }
 
-      print('نزدیک‌ترین ایندکس: $closestIndex');
-      print('زمان نزدیک‌ترین ایندکس: ${closestIndex >= 0 ? times[closestIndex] : "ناموجود"}');
-
       if (closestIndex != -1 && closestIndex < times.length) {
         // UV Index
         final uvIndexes = (hourly['uv_index'] as List<dynamic>?)?.cast<double>() ?? [];
         if (closestIndex < uvIndexes.length) {
           uvIndex = uvIndexes[closestIndex];
-          print('UV Index برای نزدیک‌ترین زمان (${times[closestIndex]}): $uvIndex');
         }
 
-        // پیدا کردن میانگین احتمال بارندگی برای 12 ساعت آینده
         final probabilities = (hourly['precipitation_probability'] as List<dynamic>?)?.cast<int>() ?? [];
-        print('داده‌های احتمال بارندگی خام: $probabilities');
         if (probabilities.isNotEmpty && closestIndex < probabilities.length) {
           int sumProbability = 0;
           int validHours = 0;
           for (int i = closestIndex; i < probabilities.length && i < closestIndex + 12; i++) {
             sumProbability += probabilities[i];
             validHours++;
-            print('ساعت ${times[i]}: احتمال بارندگی ${probabilities[i]}%');
           }
           precipitationProbability = validHours > 0 ? (sumProbability / validHours).round() : 0;
-          print('میانگین احتمال بارندگی برای 12 ساعت آینده از (${times[closestIndex]}): $precipitationProbability%');
         } else {
-          print('خطا: داده‌های احتمال بارندگی خالی است یا ایندکس نامعتبر است');
           precipitationProbability = 0;
         }
       } else {
-        print('خطا: نزدیک‌ترین زمان پیدا نشد');
         precipitationProbability = 0;
       }
     } else {
-      print('خطا: ساعت فعلی یا لیست زمان‌ها وجود ندارد');
       precipitationProbability = 0;
     }
 
-    // تبدیل timezone از رشته (مثل "Asia/Tehran") به عدد (offset ثانیه‌ای)
     final timezoneStr = json['timezone'] as String? ?? 'UTC';
     final timezoneOffset = _getTimezoneOffset(timezoneStr);
 
     final elevation = json['elevation'] as double?;
-    print('Elevation from API in MeteoCurrentWeatherModel: $elevation');
-    print('ارتفاع از سطح دریا ذخیره‌شده: $elevation');
 
     return MeteoCurrentWeatherModel(
       name: name ?? json['city_name'] as String?,
@@ -138,7 +114,6 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     );
   }
 
-  // متد استاتیک برای تبدیل weatherCode به توضیحات
   static String _mapWeatherCodeToDescription(int code, String lang) {
     Map<int, String> weatherDescriptions = {
       0: 'آفتابی',
@@ -174,7 +149,6 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
     return weatherDescriptions[code] ?? 'ناشناخته';
   }
 
-  // متد برای تبدیل timezone به offset ثانیه‌ای
   static int _getTimezoneOffset(String timezone) {
     const timezoneOffsets = {
       'UTC': 0,

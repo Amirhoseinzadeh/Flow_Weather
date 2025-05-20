@@ -5,14 +5,16 @@ class HomeState extends Equatable {
   final FwStatus fwStatus;
   final AirQualityStatus aqStatus;
   final bool isLocationLoading;
-  final bool isCityLoading; // New field for city loading state
+  final bool isCityLoading;
+  final String? errorMessage;
 
-  HomeState({
+  const HomeState({
     required this.cwStatus,
     required this.fwStatus,
     required this.aqStatus,
     required this.isLocationLoading,
     required this.isCityLoading,
+    this.errorMessage,
   });
 
   HomeState copyWith({
@@ -21,16 +23,18 @@ class HomeState extends Equatable {
     AirQualityStatus? newAirQualityStatus,
     bool? isLocationLoading,
     bool? isCityLoading,
+    String? errorMessage,
   }) {
     return HomeState(
-      cwStatus: newCwStatus ?? this.cwStatus,
-      fwStatus: newFwStatus ?? this.fwStatus,
-      aqStatus: newAirQualityStatus ?? this.aqStatus,
+      cwStatus: newCwStatus ?? cwStatus,
+      fwStatus: newFwStatus ?? fwStatus,
+      aqStatus: newAirQualityStatus ?? aqStatus,
       isLocationLoading: isLocationLoading ?? this.isLocationLoading,
       isCityLoading: isCityLoading ?? this.isCityLoading,
+      errorMessage: errorMessage,
     );
   }
 
   @override
-  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading];
+  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage];
 }

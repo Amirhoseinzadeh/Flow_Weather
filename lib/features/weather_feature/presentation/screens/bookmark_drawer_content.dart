@@ -1,9 +1,8 @@
-import 'dart:ui';
 import 'package:flow_weather/core/utils/load_city_weather.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_bloc.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_event.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_state.dart';
-import 'package:flow_weather/features/bookmark_feature/presentation/bloc/get_all_city_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_bloc.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_event.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/bookmark_state.dart';
+import 'package:flow_weather/features/weather_feature/presentation/bloc/bookmark_bloc/get_all_city_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/cw_status.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_event.dart';
@@ -18,6 +17,7 @@ class BookmarkDrawerContent extends StatelessWidget {
   Widget build(BuildContext context) {
     context.read<BookmarkBloc>().add(GetAllCitiesEvent());
     var width = MediaQuery.of(context).size.width;
+
     return SafeArea(
       child: Column(
         children: [
@@ -44,9 +44,8 @@ class BookmarkDrawerContent extends StatelessWidget {
                 onTap: isLoading
                     ? null
                     : () {
-                  // فعال کردن حالت لودینگ و درخواست موقعیت
                   context.read<HomeBloc>().add(const SetLocationLoading(true));
-                  context.read<HomeBloc>().getCurrentLocation(context, forceRequest: true);
+                  context.read<HomeBloc>().getCurrentLocation();
                 },
               );
             },
@@ -80,7 +79,7 @@ class BookmarkDrawerContent extends StatelessWidget {
                           height: 55.0,
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.all(Radius.circular(20)),
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withAlpha((0.25 * 255).round()),
                           ),
                           child: isLoading
                               ? Shimmer.fromColors(
@@ -89,16 +88,16 @@ class BookmarkDrawerContent extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.all(Radius.circular(20)),
-                                color: Colors.white.withOpacity(.2),
+                                color: Colors.grey.withAlpha((0.2 * 255).round()),
                               ),
                               child: ListTile(
-                                title: Text(city.name, style: const TextStyle(color: Colors.white)),
+                                title: Text(city.name, style: const TextStyle(color: Colors.white, fontFamily: 'Titr')),
                                 trailing: const Icon(Icons.remove_circle, color: Colors.redAccent),
                               ),
                             ),
                           )
                               : ListTile(
-                            title: Text(city.name, style: const TextStyle(color: Colors.white)),
+                            title: Text(city.name, style: const TextStyle(color: Colors.white, fontFamily: 'Titr')),
                             trailing: IconButton(
                               icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
                               onPressed: () {
@@ -111,10 +110,9 @@ class BookmarkDrawerContent extends StatelessWidget {
                               },
                             ),
                             onTap: () async {
-                              print('نام شهر انتخاب‌شده: ${city.name}');
+                              context.read<HomeBloc>().add(const SetCityLoading(true));
                               context.read<BookmarkBloc>().add(LoadCityWeatherEvent(index));
                               await loadCityWeather(context, city.name, lat: city.lat, lon: city.lon);
-                              // دراور توسط HomeScreen بسته می‌شه
                             },
                           ),
                         ),

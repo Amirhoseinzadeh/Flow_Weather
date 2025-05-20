@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/city.dart';
 
 abstract class GetAllCityStatus extends Equatable {}
 

@@ -1,4 +1,4 @@
-import 'package:flow_weather/core/usecases/UseCase.dart';
+import 'package:flow_weather/core/usecases/use_case.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/repository/weather_repository.dart';
 

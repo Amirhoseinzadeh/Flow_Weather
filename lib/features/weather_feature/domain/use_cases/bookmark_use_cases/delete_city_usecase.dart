@@ -1,7 +1,7 @@
 
 import 'package:flow_weather/core/resources/data_state.dart';
-import 'package:flow_weather/core/usecases/UseCase.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/repository/city_repository.dart';
+import 'package:flow_weather/core/usecases/use_case.dart';
+import 'package:flow_weather/features/weather_feature/domain/repository/city_repository.dart';
 
 class DeleteCityUseCase implements UseCase<DataState<String>, String> {
   final CityRepository _cityRepository;

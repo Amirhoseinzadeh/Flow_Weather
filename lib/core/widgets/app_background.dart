@@ -17,11 +17,9 @@ class AppBackground {
 
   static StatefulWidget setIconForMain(String? description) {
     if (description == null || description.isEmpty) {
-      print("Description is null or empty, using default icon");
       return Image(image: AssetImage('assets/images/icons8-windy-weather-80.png'));
     }
 
-    print("Description received: $description");
 
     if (description == "آفتابی") {
       return Lottie.asset('assets/lotties/sunny.json',repeat: true,
@@ -57,7 +55,6 @@ class AppBackground {
       return Lottie.asset('assets/lotties/light_snow.json',repeat: true,
         animate: true,);
     } else {
-      print("Description '$description' not matched, using default icon");
       return Lottie.asset('assets/lotties/windy.json',repeat: true,
         animate: true,);
     }

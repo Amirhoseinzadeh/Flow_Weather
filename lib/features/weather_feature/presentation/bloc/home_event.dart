@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flow_weather/core/params/ForecastParams.dart';
+import 'package:flow_weather/core/params/forecast_params.dart';
 
 abstract class HomeEvent extends Equatable {
   const HomeEvent();
@@ -16,11 +16,12 @@ class LoadCwEvent extends HomeEvent {
   const LoadCwEvent(this.cityName, {this.lat, this.lon});
 
   @override
-  List<Object> get props => [cityName, lat ?? 0.0, lon ?? 0.0];
+  List<Object> get props => [cityName, lat ?? 0, lon ?? 0]; // بهینه‌سازی با ?? 0
 }
 
 class LoadFwEvent extends HomeEvent {
   final ForecastParams forecastParams;
+
   const LoadFwEvent(this.forecastParams);
 
   @override
@@ -38,16 +39,34 @@ class LoadAirQualityEvent extends HomeEvent {
 
 class SetLocationLoading extends HomeEvent {
   final bool isLoading;
+
   const SetLocationLoading(this.isLoading);
 
   @override
   List<Object> get props => [isLoading];
 }
 
-class SetCityLoading extends HomeEvent { // اضافه کردن رویداد جدید
+class SetCityLoading extends HomeEvent {
   final bool isLoading;
+
   const SetCityLoading(this.isLoading);
 
   @override
   List<Object> get props => [isLoading];
+}
+
+class SetErrorMessage extends HomeEvent {
+  final String errorMessage;
+
+  const SetErrorMessage(this.errorMessage);
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
+class ClearErrorMessage extends HomeEvent {
+  const ClearErrorMessage();
+
+  @override
+  List<Object> get props => [];
 }

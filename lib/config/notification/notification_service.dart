@@ -6,7 +6,7 @@
 // import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:timezone/data/latest.dart' as tz;
 // import 'package:flow_weather/core/resources/data_state.dart';
-// import 'package:flow_weather/features/weather_feature/domain/use_cases/get_current_weather_usecase.dart';
+// import 'package:flow_weather/features/weather_feature/domain/bookmark_use_cases/get_current_weather_usecase.dart';
 // import 'package:flow_weather/locator.dart';
 //
 // class NotificationService {

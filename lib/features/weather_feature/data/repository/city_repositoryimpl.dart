@@ -1,8 +1,8 @@
 import 'package:flow_weather/core/resources/data_state.dart';
-import 'package:flow_weather/features/bookmark_feature/data/data_source/local/city_model.dart';
-import 'package:flow_weather/features/bookmark_feature/data/data_source/local/mappers/city_mapper.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/entities/city.dart';
-import 'package:flow_weather/features/bookmark_feature/domain/repository/city_repository.dart';
+import 'package:flow_weather/features/weather_feature/data/data_source/local/city_model.dart';
+import 'package:flow_weather/features/weather_feature/data/data_source/local/mappers/city_mapper.dart';
+import 'package:flow_weather/features/weather_feature/domain/entities/city.dart';
+import 'package:flow_weather/features/weather_feature/domain/repository/city_repository.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class CityRepositoryImpl extends CityRepository {

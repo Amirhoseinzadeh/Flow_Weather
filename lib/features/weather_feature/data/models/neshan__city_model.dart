@@ -3,9 +3,9 @@ import 'package:flow_weather/features/weather_feature/domain/entities/neshan_cit
 
 class NeshanCityModel extends NeshanCityEntity {
   NeshanCityModel({
-    int? count,
-    List<NeshanCityItem>? items,
-  }) : super(count: count, items: items);
+    super.count,
+    super.items,
+  });
 
   factory NeshanCityModel.fromJson(dynamic json) {
     List<NeshanCityItem> items = [];
