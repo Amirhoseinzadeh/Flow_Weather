@@ -100,8 +100,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final now = DateTime.now();
-    final hourStr = DateFormat('kk').format(now);
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('kk').format(now);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
@@ -134,11 +134,10 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
             ),
           ),
           body: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/5.png"),
-                fit: BoxFit.cover,
-              ),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AppBackground.getBackGroundImage(formattedDate),
+                  fit: BoxFit.cover,)
             ),
             child: SafeArea(
               child: ListView(
@@ -179,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 return TextField(
                                   controller: controller,
                                   focusNode: focusNode,
-                                  style: const TextStyle(fontFamily: "nazanin", color: Colors.white),
+                                  style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold),
                                   decoration: const InputDecoration(
                                     hintText: "جستجوی شهر...",
                                     hintStyle: TextStyle(color: Colors.white70),
@@ -223,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        // const SizedBox(width: 8),
                         BlocBuilder<HomeBloc, HomeState>(
                           buildWhen: (p, c) => p.cwStatus != c.cwStatus,
                           builder: (context, state) {
@@ -234,8 +233,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             }
                             if (state.cwStatus is CwLoading) {
                               return const SizedBox(
-                                width: 24,
-                                height: 24,
+                                width: 26,
+                                height: 26,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               );
                             }
@@ -260,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                           child: Center(
                             child: Text(
                               'خطا در بارگذاری هواشناسی: ${(state.cwStatus as CwError).message}',
-                              style: const TextStyle(fontFamily: "nazanin", color: Colors.red),
+                              style: const TextStyle( color: Colors.red),
                             ),
                           ),
                         );
@@ -366,14 +365,47 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                               style: TextStyle(
                                                 fontFamily: "entezar",
                                                 fontSize: 22,
-                                                color: Colors.yellow,
+                                                color: Colors.orangeAccent,
                                               ),
+                                            ).animate(
+                                              target: isExpanded ? 1 : 0,
+                                              effects: [
+                                                ScaleEffect(
+                                                  begin: const Offset(1, 1),
+                                                  end: const Offset(1.1, 1.1),
+                                                  curve: Curves.easeInOut,
+                                                  duration: const Duration(milliseconds: 400),
+                                                ),
+                                                TintEffect(
+                                                  begin: 0.0,
+                                                  end: 0.2,
+                                                  color: Colors.white,
+                                                  curve: Curves.easeInOut,
+                                                  duration: const Duration(milliseconds: 400),
+                                                ),
+                                              ],
                                             ),
                                             const SizedBox(width: 8),
                                             Icon(
                                               isExpanded ? Icons.expand_less : Icons.expand_more,
                                               color: Colors.white70,
                                               size: 26,
+                                            ).animate(
+                                              target: isExpanded ? 1 : 0,
+                                              effects: const [
+                                                RotateEffect(
+                                                  begin: 0.0,
+                                                  end: 0.5,
+                                                  curve: Curves.easeInOut,
+                                                  duration: Duration(milliseconds: 400),
+                                                ),
+                                                ScaleEffect(
+                                                  begin: Offset(1, 1),
+                                                  end: Offset(1.2, 1.2),
+                                                  curve: Curves.easeInOut,
+                                                  duration: Duration(milliseconds: 400),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
@@ -384,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                           _detailCubit.toggleDetail();
                                         },
                                         children: [
-                                          const SizedBox(height: 10),
+                                          // const SizedBox(height: 10),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
@@ -395,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellowAccent,
+                                                      color: Colors.yellow,
                                                     ),
                                                   ),
                                                   Text(
@@ -414,9 +446,10 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 children: [
                                                   const Text(
                                                     "حداقل دما",
-                                                    style: TextStyle(fontFamily: "nikoo",
+                                                    style: TextStyle(
+                                                      fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellowAccent,
+                                                      color: Colors.yellow,
                                                     ),
                                                   ),
                                                   Text(
@@ -451,9 +484,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 children: [
                                                   const Text(
                                                     "حداکثر دما",
-                                                    style: TextStyle(fontFamily: "nikoo",
+                                                    style: TextStyle(
+                                                      fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellowAccent,),
+                                                      color: Colors.yellow,
+                                                    ),
                                                   ),
                                                   Text(
                                                     "${maxTemp.round()}°",
@@ -474,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellowAccent,
+                                                      color: Colors.yellow,
                                                     ),
                                                   ),
                                                   Text(
@@ -482,6 +517,22 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: const TextStyle(color: Colors.white),
                                                   ),
                                                 ],
+                                              ),
+                                            ],
+                                          ).animate(
+                                            target: isExpanded ? 1 : 0,
+                                            effects: [
+                                              SlideEffect(
+                                                begin: isExpanded ? const Offset(0, -1) : const Offset(0, 1),
+                                                end: const Offset(0, 0),
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
+                                              ),
+                                              FadeEffect(
+                                                begin: isExpanded ? 0.0 : 1.0,
+                                                end: isExpanded ? 1.0 : 0.0,
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
                                               ),
                                             ],
                                           ),
@@ -512,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellow,
+                                                      color: Colors.amberAccent,
                                                     ),
                                                   ),
                                                   Text(
@@ -549,7 +600,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                           style: TextStyle(
                                                             fontFamily: "nikoo",
                                                             fontSize: 18,
-                                                            color: Colors.yellow,
+                                                            color: Colors.amberAccent,
                                                           ),
                                                         ),
                                                         Text(
@@ -573,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.yellow,
+                                                      color: Colors.amberAccent,
                                                     ),
                                                   ),
                                                   Text(
@@ -583,7 +634,26 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                 ],
                                               ),
                                             ],
+                                          ).animate(
+                                            target: isExpanded ? 1 : 0,
+                                            effects: [
+                                              SlideEffect(
+                                                begin: isExpanded ? const Offset(0, -1) : const Offset(0, 1),
+                                                end: const Offset(0, 0),
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
+                                                delay: const Duration(milliseconds: 100),
+                                              ),
+                                              FadeEffect(
+                                                begin: isExpanded ? 0.0 : 1.0,
+                                                end: isExpanded ? 1.0 : 0.0,
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
+                                                delay: const Duration(milliseconds: 100),
+                                              ),
+                                            ],
                                           ),
+                                          const SizedBox(height: 10),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
@@ -610,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.orangeAccent
+                                                      color: Colors.amber,
                                                     ),
                                                   ),
                                                   Text(
@@ -632,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: TextStyle(
                                                       fontFamily: "nikoo",
                                                       fontSize: 18,
-                                                      color: Colors.orangeAccent
+                                                      color: Colors.amber,
                                                     ),
                                                   ),
                                                   Text(
@@ -640,6 +710,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                     style: const TextStyle(color: Colors.white),
                                                   ),
                                                 ],
+                                              ),
+                                            ],
+                                          ).animate(
+                                            target: isExpanded ? 1 : 0,
+                                            effects: [
+                                              SlideEffect(
+                                                begin: isExpanded ? const Offset(0, -1) : const Offset(0, 1),
+                                                end: const Offset(0, 0),
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
+                                                delay: const Duration(milliseconds: 200),
+                                              ),
+                                              FadeEffect(
+                                                begin: isExpanded ? 0.0 : 1.0,
+                                                end: isExpanded ? 1.0 : 0.0,
+                                                curve: Curves.easeInOut,
+                                                duration: const Duration(milliseconds: 500),
+                                                delay: const Duration(milliseconds: 200),
                                               ),
                                             ],
                                           ),
@@ -670,7 +758,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                 return Column(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 16),
+                                      padding: const EdgeInsets.only(top: 12),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.withOpacity(.1),
                                         borderRadius: BorderRadius.circular(20),
@@ -679,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 36),
+                                            padding: const EdgeInsets.symmetric(horizontal: 20),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
@@ -694,49 +783,49 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                           SizedBox(
                                             height: 100,
                                             child: ListView.builder(
+                                              shrinkWrap: true,
                                               scrollDirection: Axis.horizontal,
-                                              cacheExtent: 1000,
+                                              cacheExtent: 200,
+                                              itemExtent: 54, // اندازه ثابت هر آیتم برای بهینه‌سازی رندر
                                               itemCount: forecast.hours.length,
+                                              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), // اسکرول روان‌تر
                                               itemBuilder: (ctx, i) {
                                                 final h = forecast.hours[i];
                                                 final lbl = DateFormat('HH:mm').format(DateTime.parse(h.time));
-                                                return Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(i == 0 ? "اکنون" : lbl, style: const TextStyle(color: Colors.white70)),
-                                                      const SizedBox(height: 2),
-                                                      Image.asset(
-                                                        h.conditionIcon,
-                                                        width: 30,
-                                                        height: 30,
-                                                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Text('${h.temperature.round()}°', style: const TextStyle(color: Colors.white)),
-                                                    ].animate(interval: 200.ms).scale(),
-                                                  ),
+                                                return Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(i == 0 ? "اکنون" : lbl, style: const TextStyle(color: Colors.white70)),
+                                                    const SizedBox(height: 2),
+                                                    Image.asset(
+                                                      h.conditionIcon,
+                                                      width: 30,
+                                                      height: 30,
+                                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text('${h.temperature.round()}°', style: const TextStyle(color: Colors.white)),
+                                                  ].animate(interval: 200.ms).scale(), // افزایش interval برای کاهش فشار
                                                 );
                                               },
                                             ),
                                           ),
-                                        ].animate(interval: 200.ms).scale(),
-                                      ),
+                                        ],
+                                      )
                                     ),
                                     const Divider(color: Colors.white12, thickness: 2),
                                     Container(
                                       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-                                      padding: const EdgeInsets.all(10),
+                                      padding: const EdgeInsets.only(top:  14, bottom: 10,right: 10),
                                       decoration: BoxDecoration(
-                                        color: Colors.grey.withOpacity(.2),
+                                        color: Colors.grey.withOpacity(.18),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                                            padding: const EdgeInsets.only(right: 10,left: 24),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [

@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:shamsi_date/shamsi_date.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
 
 class ForecastNextDaysWidget extends StatelessWidget {
   final List<ForecastDayEntity> forecastDays;
   const ForecastNextDaysWidget({Key? key, required this.forecastDays}) : super(key: key);
+
+  static const Map<String, String> _weekDayMap = {
+    'Mon': 'دوشنبه',
+    'Tue': 'سه‌شنبه',
+    'Wed': 'چهارشنبه',
+    'Thu': 'پنجشنبه',
+    'Fri': 'جمعه',
+    'Sat': 'شنبه',
+    'Sun': 'یکشنبه',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -19,29 +30,32 @@ class ForecastNextDaysWidget extends StatelessWidget {
         itemCount: forecastDays.length,
         itemBuilder: (context, index) {
           final day = forecastDays[index];
-          final dayLabel = index == 0
-              ? "Today"
-              : DateFormat('E').format(DateTime.parse(day.date));
-          final dateLabel = DateFormat('MMM d').format(DateTime.parse(day.date)); // فرمت تاریخ: Apr 13
+          final date = DateTime.parse(day.date);
+          final jalaliDate = Jalali.fromDateTime(date);
+
+          final weekDayEn = DateFormat('E').format(date);
+          final weekDayFa = _weekDayMap[weekDayEn] ?? weekDayEn;
+
+          final dateLabel = '${jalaliDate.day} ${jalaliDate.formatter.mN}'; // اسم ماه به فارسی + روز
+
           final minTemp = day.minTempC.round();
           final maxTemp = day.maxTempC.round();
           return Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // روز هفته
                 SizedBox(
-                  width: width * .14,
+                  width: 64,
                   child: Text(
-                    dayLabel,
+                    index == 0 ? "امروز" : weekDayFa,
                     style: const TextStyle(
+                      fontFamily: "lalezar",
                       color: Colors.white70,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-                // آیکون وضعیت
                 Image.asset(
                   day.conditionIcon,
                   width: 35,
@@ -51,8 +65,7 @@ class ForecastNextDaysWidget extends StatelessWidget {
                     color: Colors.red,
                   ),
                 ),
-                SizedBox(width: width *.04,),
-                // دمای حداقل
+                SizedBox(width: width * .04),
                 SizedBox(
                   width: width * .07,
                   child: Text(
@@ -63,7 +76,6 @@ class ForecastNextDaysWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                // نوار دما
                 Expanded(
                   child: Stack(
                     children: [
@@ -84,13 +96,12 @@ class ForecastNextDaysWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ]
+                    ],
                   ),
                 ),
-                // دمای حداکثر
-                SizedBox(width: width *.03,),
+                SizedBox(width: width * .02),
                 SizedBox(
-                  width: width * .1,
+                  width: width * .09,
                   child: Text(
                     '$maxTemp°',
                     style: const TextStyle(
@@ -99,14 +110,15 @@ class ForecastNextDaysWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                // تاریخ (ماه و روز)
                 SizedBox(
-                  width: width * .13,
+                  width: 77,
                   child: Text(
+                    maxLines: 1,
                     dateLabel,
                     style: const TextStyle(
+                      fontFamily: "lalezar",
                       color: Colors.white70,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                     textAlign: TextAlign.right,
                   ),

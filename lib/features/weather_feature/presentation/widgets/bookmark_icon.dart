@@ -24,7 +24,7 @@ class BookMarkIcon extends StatelessWidget {
 
         return IconButton(
           icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 100),
+            duration: const Duration(milliseconds: 200),
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,
@@ -35,6 +35,7 @@ class BookMarkIcon extends StatelessWidget {
               );
             },
             child: Icon(
+              size: 30,
               isBookmarked ? Icons.bookmark : Icons.bookmark_border,
               color: Colors.white,
               key: ValueKey<bool>(isBookmarked),

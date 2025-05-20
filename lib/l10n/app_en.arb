@@ -1,0 +1,6 @@
+{
+  "helloWorld": "City Search...",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  }
+}

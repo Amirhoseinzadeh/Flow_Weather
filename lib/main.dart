@@ -5,10 +5,12 @@ import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmar
 import 'package:flow_weather/features/bookmark_feature/presentation/bloc/bookmark_icon_cubit.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/home_bloc.dart';
 import 'package:flow_weather/features/weather_feature/presentation/screens/home_screen.dart';
+import 'package:flow_weather/generated/app_localizations.dart';
 import 'package:flow_weather/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: const Locale('fa'),
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en'), // English
+        Locale('fa'), // Persian
+      ],
       debugShowCheckedModeBanner: false,
       home: MultiBlocProvider(
         providers: [
