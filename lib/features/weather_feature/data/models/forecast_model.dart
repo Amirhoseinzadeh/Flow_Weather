@@ -1,4 +1,3 @@
-// forecast_model.dart
 import 'dart:math';
 import 'package:flow_weather/features/weather_feature/domain/entities/forecast_entity.dart';
 
@@ -15,6 +14,8 @@ class ForecastModel extends ForecastEntity {
     final tempsMaxD = daily['temperature_2m_max'] as List;
     final tempsMinD = daily['temperature_2m_min'] as List;
     final codesD = daily['weathercode'] as List;
+    final precipitationSumD = daily['precipitation_sum'] as List;
+    final windSpeedMaxD = daily['wind_speed_10m_max'] as List;
 
     final days = List<ForecastDayEntity>.generate(timesD.length, (i) {
       return ForecastDayEntity(
@@ -22,14 +23,18 @@ class ForecastModel extends ForecastEntity {
         minTempC: (tempsMinD[i] as num).toDouble(),
         maxTempC: (tempsMaxD[i] as num).toDouble(),
         conditionIcon: _mapWeatherCodeToIcon(codesD[i] as int),
+        precipitationSum: (precipitationSumD[i] as num).toDouble(),
+        windSpeedMax: (windSpeedMaxD[i] as num).toDouble(),
       );
     });
 
-    // --- نگاشت ساعتی از ساعت کنونی ---
     final hourly = json['hourly'];
     final timesH = hourly['time'] as List;
     final tempsH = hourly['temperature_2m'] as List;
     final codesH = hourly['weathercode'] as List;
+    final precipitationProbH = hourly['precipitation_probability'] as List;
+    final windSpeedH = hourly['wind_speed_10m'] as List;
+    final humidityH = hourly['relative_humidity_2m'] as List;
 
     final dateTimes = timesH.map((t) => DateTime.parse(t as String)).toList();
     final now = DateTime.now();
@@ -46,6 +51,9 @@ class ForecastModel extends ForecastEntity {
         time: timesH[idx] as String,
         temperature: (tempsH[idx] as num).toDouble(),
         conditionIcon: _mapWeatherCodeToIcon(codesH[idx] as int),
+        precipitationProbability: (precipitationProbH[idx] as num).toDouble(),
+        windSpeed: (windSpeedH[idx] as num).toDouble(),
+        humidity: (humidityH[idx] as num).toDouble(),
       );
     });
 

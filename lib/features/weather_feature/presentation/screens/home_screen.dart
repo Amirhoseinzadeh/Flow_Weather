@@ -23,6 +23,7 @@ import 'package:flow_weather/features/weather_feature/presentation/bloc/home_blo
 import 'package:flow_weather/features/weather_feature/presentation/screens/bookmark_drawer_content.dart';
 import 'package:flow_weather/features/weather_feature/presentation/widgets/bookmark_icon.dart';
 import 'package:flow_weather/locator.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -212,23 +213,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      BlocBuilder<HomeBloc, HomeState>(
-                        buildWhen: (p, c) => p.cwStatus != c.cwStatus,
-                        builder: (context, state) {
-                          if (state.cwStatus is CwCompleted) {
-                            final name = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.name ?? '';
-                            _bookmarkBloc.add(FindCityByNameEvent(name));
-                            return BookMarkIcon(name: name);
-                          }
-                          if (state.cwStatus is CwLoading) {
-                            return const SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: BlocBuilder<HomeBloc, HomeState>(
+                          buildWhen: (p, c) => p.cwStatus != c.cwStatus,
+                          builder: (context, state) {
+                            if (state.cwStatus is CwCompleted) {
+                              final name = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.name ?? '';
+                              _bookmarkBloc.add(FindCityByNameEvent(name));
+                              return BookMarkIcon(name: name);
+                            }
+                            if (state.cwStatus is CwLoading) {
+                              return LoadingAnimationWidget.bouncingBall(
+                                size: 30,
+                                color: Colors.white,
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -243,9 +247,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       return SizedBox(
                         height: 200,
                         child: Center(
-                          child: Text(
-                            'خطا در بارگذاری هواشناسی: ${(state.cwStatus as CwError).message ?? 'خطای ناشناخته'}',
-                            style: const TextStyle(color: Colors.red),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.wifi_off, color: Colors.redAccent, size: 60),
+                              const SizedBox(width: 10),
+                              Text(
+                                'اینترنت را روشن کنید',
+                                style: const TextStyle(color: Colors.redAccent,fontSize: 30),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -336,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/5.png'),
+                image: AssetImage('assets/images/4.png'),
                 fit: BoxFit.cover,
               ),
             ),

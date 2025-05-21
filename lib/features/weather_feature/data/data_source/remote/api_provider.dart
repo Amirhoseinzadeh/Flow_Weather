@@ -43,9 +43,9 @@ class ApiProvider {
           )).toList(),
         );
       }
-      throw Exception('خطا در دریافت داده‌های شهر: وضعیت ${response.statusCode}');
+      throw Exception('خطا در دریافت داده‌های شهر: وضعیت ');
     } catch (e) {
-      throw Exception('خطا در جستجوی شهر: $e');
+      throw Exception('خطا در جستجوی شهر: ');
     }
   }
 
@@ -169,9 +169,9 @@ class ApiProvider {
           precipitationProbability: model.precipitationProbability,
         );
       }
-      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
+      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ');
     } catch (e) {
-      throw Exception('خطا در دریافت آب‌وهوای کنونی: $e');
+      throw Exception('خطا در دریافت آب‌وهوای کنونی: ');
     }
   }
 
@@ -219,9 +219,9 @@ class ApiProvider {
           precipitationProbability: model.precipitationProbability,
         );
       }
-      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
+      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ');
     } catch (e) {
-      throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: $e');
+      throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: ');
     }
   }
 
@@ -237,8 +237,8 @@ class ApiProvider {
         queryParameters: {
           'latitude': params.lat,
           'longitude': params.lon,
-          'daily': 'weathercode,temperature_2m_max,temperature_2m_min',
-          'hourly': 'temperature_2m,weathercode,precipitation_probability',
+          'daily': 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max',
+          'hourly': 'temperature_2m,relative_humidity_2m,weathercode,precipitation_probability,wind_speed_10m',
           'start_date': startDate,
           'end_date': endDate,
           'timezone': 'auto',
@@ -248,9 +248,9 @@ class ApiProvider {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       }
-      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا: وضعیت ${response.statusCode}');
+      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا: وضعیت ');
     } catch (e) {
-      throw Exception('خطا در دریافت پیش‌بینی آب‌وهوا: $e');
+      throw Exception('خطا در دریافت پیش‌بینی آب‌وهوا: ');
     }
   }
 
@@ -271,7 +271,7 @@ class ApiProvider {
       ).timeout(const Duration(seconds: 10));
       return AirQualityModel.fromJson(response.data);
     } catch (e) {
-      throw Exception('خطا در دریافت داده‌های کیفیت هوا: $e');
+      throw Exception('خطا در دریافت داده‌های کیفیت هوا: ');
     }
   }
 }

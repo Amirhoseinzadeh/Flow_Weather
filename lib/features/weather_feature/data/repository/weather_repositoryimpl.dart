@@ -40,7 +40,7 @@ class WeatherRepositoryImpl extends WeatherRepository {
       final forecast = ForecastModel.fromJson(json);
       return DataSuccess(forecast);
     } catch (e) {
-      return DataFailed("خطا در دریافت پیش‌بینی: ${e.toString()}");
+      return DataFailed("خطا در دریافت پیش‌بینی: ");
     }
   }
 
@@ -60,7 +60,7 @@ class WeatherRepositoryImpl extends WeatherRepository {
       AirQualityEntity airQualityEntity = await _apiProvider.getAirQuality(params);
       return DataSuccess(airQualityEntity);
     } catch (e) {
-      return DataFailed("خطا در دریافت پیش‌بینی: ${e.toString()}");
+      return DataFailed("خطا در دریافت پیش‌بینی: ");
     }
   }
 }
