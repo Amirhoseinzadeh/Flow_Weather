@@ -46,9 +46,14 @@ android {
         }
     }
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true // تغییر از minifyEnabled به isMinifyEnabled
+            isShrinkResources = true // تغییر از shrinkResources به isShrinkResources
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"), // تغییر نقل‌قول
+                file("proguard-rules.pro") // تغییر نقل‌قول
+            )
         }
     }
 }
@@ -58,6 +63,6 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4") // آپدیت به نسخه 2.1.4
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.multidex:multidex:2.0.1")
 }

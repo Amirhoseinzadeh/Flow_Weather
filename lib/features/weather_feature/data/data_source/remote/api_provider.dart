@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 
 class ApiProvider {
   final Dio _dio = Dio();
-  final String apiKeys = Constants.apiKey;
+  final String? apiKeys = Constants.apiKey;
 
   Future<neshan.NeshanCityEntity> sendRequestCitySuggestion(String prefix) async {
     try {
@@ -92,8 +92,9 @@ class ApiProvider {
       });
       if (placemarks.isNotEmpty) {
         String cityName = placemarks.first.locality ??
+            placemarks.first.subLocality ??
             placemarks.first.subAdministrativeArea ??
-            'موقعیت نامشخص';
+            'شهر نامشخص';
         String address = placemarks.first.street ?? 'آدرس نامشخص';
         return neshan.NeshanCityItem(
           title: cityName,
@@ -102,14 +103,14 @@ class ApiProvider {
         );
       } else {
         return neshan.NeshanCityItem(
-          title: 'موقعیت نامشخص',
+          title: 'شهر نامشخص',
           address: 'آدرس نامشخص',
           location: neshan.Location(x: lon, y: lat),
         );
       }
     } catch (e) {
       return neshan.NeshanCityItem(
-        title: 'موقعیت نامشخص',
+        title: 'شهر نامشخص',
         address: 'آدرس نامشخص',
         location: neshan.Location(x: lon, y: lat),
       );

@@ -31,6 +31,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     isLocationLoading: false,
     isCityLoading: false,
     errorMessage: null,
+    isDetailsExpanded: false,
   )) {
     on<LoadCwEvent>(_onLoadCwEvent);
     on<LoadFwEvent>(_onLoadFwEvent);
@@ -39,6 +40,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<SetCityLoading>(_onSetCityLoading);
     on<ClearErrorMessage>(_onClearErrorMessage);
     on<SetErrorMessage>(_onSetErrorMessage);
+    on<ToggleDetailsExpansion>(_onToggleDetailsExpansion);
+  }
+
+  void _onToggleDetailsExpansion(ToggleDetailsExpansion event, Emitter<HomeState> emit) {
+    emit(state.copyWith(isDetailsExpanded: event.isExpanded));
   }
 
   Future<void> _onLoadCwEvent(LoadCwEvent event, Emitter<HomeState> emit) async {

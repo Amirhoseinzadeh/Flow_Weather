@@ -7,6 +7,7 @@ class HomeState extends Equatable {
   final bool isLocationLoading;
   final bool isCityLoading;
   final String? errorMessage;
+  final bool isDetailsExpanded;
 
   const HomeState({
     required this.cwStatus,
@@ -15,6 +16,7 @@ class HomeState extends Equatable {
     required this.isLocationLoading,
     required this.isCityLoading,
     this.errorMessage,
+    this.isDetailsExpanded = false,
   });
 
   HomeState copyWith({
@@ -24,6 +26,7 @@ class HomeState extends Equatable {
     bool? isLocationLoading,
     bool? isCityLoading,
     String? errorMessage,
+    bool? isDetailsExpanded,
   }) {
     return HomeState(
       cwStatus: newCwStatus ?? cwStatus,
@@ -32,9 +35,10 @@ class HomeState extends Equatable {
       isLocationLoading: isLocationLoading ?? this.isLocationLoading,
       isCityLoading: isCityLoading ?? this.isCityLoading,
       errorMessage: errorMessage,
+      isDetailsExpanded: isDetailsExpanded ?? this.isDetailsExpanded,
     );
   }
 
   @override
-  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage];
+  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage, errorMessage, isDetailsExpanded];
 }

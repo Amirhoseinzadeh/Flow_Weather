@@ -39,7 +39,7 @@ class BookmarkDrawerContent extends StatelessWidget {
                     : const Icon(Icons.my_location, color: Colors.white),
                 title: const Text(
                   'دریافت لوکیشن کنونی',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),
                 ),
                 onTap: isLoading
                     ? null
@@ -64,7 +64,7 @@ class BookmarkDrawerContent extends StatelessWidget {
                 }
                 final cities = (state.getAllCityStatus as GetAllCityCompleted).cities;
                 if (cities.isEmpty) {
-                  return const Center(child: Text("هیچ شهری بوکمارک نشده است", style: TextStyle(color: Colors.white)));
+                  return const Center(child: Text("هیچ شهری بوکمارک نشده است", style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold)));
                 }
                 return ListView.builder(
                   itemCount: cities.length,

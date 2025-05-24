@@ -70,3 +70,12 @@ class ClearErrorMessage extends HomeEvent {
   @override
   List<Object> get props => [];
 }
+
+class ToggleDetailsExpansion extends HomeEvent {
+  final bool isExpanded;
+
+  const ToggleDetailsExpansion(this.isExpanded);
+
+  @override
+  List<Object> get props => [isExpanded];
+}

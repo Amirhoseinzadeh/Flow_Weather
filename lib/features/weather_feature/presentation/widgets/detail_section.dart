@@ -2,92 +2,49 @@ import 'package:flow_weather/core/bloc/detail_cubit.dart';
 import 'package:flow_weather/core/widgets/dot_loading_widget.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/presentation/bloc/aq_status.dart';
+import 'package:flow_weather/features/weather_feature/presentation/widgets/details_expansion_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DetailSection extends StatelessWidget {
   const DetailSection({
     super.key,
     required this.width,
-    required DetailCubit detailCubit,
     required this.city,
     required this.minTemp,
     required this.maxTemp,
     required this.sunrise,
     required this.sunset,
-    required this.aqStatus,
-  }) : _detailCubit = detailCubit;
+    required this.aqStatus, required this.detailCubit,
+  });
 
   final double width;
-  final DetailCubit _detailCubit;
   final MeteoCurrentWeatherEntity city;
   final double minTemp;
   final double maxTemp;
   final String sunrise;
   final String sunset;
   final dynamic aqStatus;
+  final DetailCubit detailCubit;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DetailCubit, bool>(
-      builder: (context, isExpanded) {
-        return ExpansionTile(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(width: width * 0.1),
-              const Text(
-                'جزئیات',
-                style: TextStyle(
-                  fontFamily: "entezar",
-                  fontSize: 22,
-                  color: Colors.orangeAccent,
-                ),
-              ).animate(
-                target: isExpanded ? 1 : 0,
-                effects: [
-                  ScaleEffect(
-                    begin: const Offset(1, 1),
-                    end: const Offset(1.1, 1.1),
-                    curve: Curves.easeInOut,
-                    duration: const Duration(milliseconds: 400),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                isExpanded ? Icons.expand_less : Icons.expand_more,
-                color: Colors.white70,
-                size: 26,
-              ),
-            ],
-          ),
-          trailing: const SizedBox.shrink(),
-          backgroundColor: Colors.transparent,
-          collapsedBackgroundColor: Colors.transparent,
-          onExpansionChanged: (expanded) {
-            _detailCubit.toggleDetail();
-          },
-          children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildRow1(isExpanded),
-                const SizedBox(height: 8),
-                _buildRow2(isExpanded),
-                const SizedBox(height: 8),
-                _buildRow3(isExpanded),
-                SizedBox(height: 8),
-              ],
-            ),
-          ],
-        );
-      },
+    return DetailsExpansionTile(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildRow1(),
+          const SizedBox(height: 8),
+          _buildRow2(),
+          const SizedBox(height: 8),
+          _buildRow3(),
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 
-  Widget _buildRow1(bool isExpanded) {
+  Widget _buildRow1() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -175,7 +132,6 @@ class DetailSection extends StatelessWidget {
         ),
       ],
     ).animate(
-      target: isExpanded ? 1 : 0,
       effects: [
         FadeEffect(
           begin: 0.0,
@@ -186,7 +142,7 @@ class DetailSection extends StatelessWidget {
     );
   }
 
-  Widget _buildRow2(bool isExpanded) {
+  Widget _buildRow2() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -264,7 +220,6 @@ class DetailSection extends StatelessWidget {
         ),
       ],
     ).animate(
-      target: isExpanded ? 1 : 0,
       effects: [
         FadeEffect(
           begin: 0.0,
@@ -275,7 +230,7 @@ class DetailSection extends StatelessWidget {
     );
   }
 
-  Widget _buildRow3(bool isExpanded) {
+  Widget _buildRow3() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -318,9 +273,7 @@ class DetailSection extends StatelessWidget {
           ],
         ),
       ],
-
     ).animate(
-      target: isExpanded ? 1 : 0,
       effects: [
         FadeEffect(
           begin: 0.0,
