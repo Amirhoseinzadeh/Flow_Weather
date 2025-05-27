@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           CurrentSection(
                             currentCity: _currentCity,
-                            cityName: cityName,
+                            cityName: city.name ?? _currentCity,
                             city: city,
                             minTemp: minTemp,
                             temp: temp,

@@ -62,60 +62,86 @@ class ApiProvider {
             'Api-Key': apiKeys,
           },
         ),
-      ).timeout(const Duration(seconds: 5), onTimeout: () {
-        throw TimeoutException('درخواست به API نشان بیش از حد طول کشید');
-      });
+      );
 
       if (response.statusCode == 200) {
         final data = response.data;
-        String cityName = data['city'] ??
-            data['formatted_address']?.split(',')?.first ??
-            'موقعیت نامشخص';
+        print(response.data);
+        String cityName = _extractCityName(data); // تابع جدید برای استخراج نام شهر
         return neshan.NeshanCityItem(
           title: cityName,
           address: data['formatted_address'] ?? 'آدرس نامشخص',
           location: neshan.Location(x: lon, y: lat),
         );
-      } else {
-        return await _getCityByGeocoding(lat, lon);
       }
     } catch (e) {
-      return await _getCityByGeocoding(lat, lon);
-    }
-  }
-
-  Future<neshan.NeshanCityItem?> _getCityByGeocoding(double lat, double lon) async {
-    try {
-      List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(lat, lon)
-          .timeout(const Duration(seconds: 5), onTimeout: () {
-        throw TimeoutException('درخواست geocoding بیش از حد طول کشید');
-      });
-      if (placemarks.isNotEmpty) {
-        String cityName = placemarks.first.locality ??
-            placemarks.first.subLocality ??
-            placemarks.first.subAdministrativeArea ??
-            'شهر نامشخص';
-        String address = placemarks.first.street ?? 'آدرس نامشخص';
-        return neshan.NeshanCityItem(
-          title: cityName,
-          address: address,
-          location: neshan.Location(x: lon, y: lat),
-        );
-      } else {
-        return neshan.NeshanCityItem(
-          title: 'شهر نامشخص',
-          address: 'آدرس نامشخص',
-          location: neshan.Location(x: lon, y: lat),
-        );
-      }
-    } catch (e) {
+      print('خطا در دریافت نام شهر: $e');
       return neshan.NeshanCityItem(
-        title: 'شهر نامشخص',
+        title: 'موقعیت نامشخص',
         address: 'آدرس نامشخص',
         location: neshan.Location(x: lon, y: lat),
       );
     }
   }
+
+  String _extractCityName(Map<String, dynamic> data) {
+    // بررسی فیلدهای مختلف برای یافتن نام شهر
+    if (data.containsKey('city') && data['city'] != null) {
+      return data['city'];
+    } else if (data.containsKey('town') && data['town'] != null) {
+      return data['town'];
+    } else if (data.containsKey('village') && data['village'] != null) {
+      return data['village'];
+    } else if (data.containsKey('formatted_address')) {
+      // تجزیه آدرس برای یافتن نام شهر
+      final addressParts = data['formatted_address'].split(',');
+      if (addressParts.length > 1) {
+        return addressParts[1].trim(); // فرض می‌کنیم نام شهر در بخش دوم است
+      }
+    }
+    return 'موقعیت نامشخص';
+  }
+
+  // Future<neshan.NeshanCityItem?> _getCityByGeocoding(double lat, double lon) async {
+  //   try {
+  //     List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(lat, lon)
+  //         .timeout(const Duration(seconds: 5), onTimeout: () {
+  //       throw TimeoutException('درخواست geocoding بیش از حد طول کشید');
+  //     });
+  //
+  //     if (placemarks.isNotEmpty) {
+  //       String cityName = 'شهر نامشخص';
+  //       for (var placemark in placemarks.take(3)) {
+  //         if (placemark.locality?.isNotEmpty == true) {
+  //           cityName = placemark.locality!;
+  //           break;
+  //         } else if (placemark.subLocality?.isNotEmpty == true) {
+  //           cityName = placemark.subLocality!;
+  //           break;
+  //         } else if (placemark.subAdministrativeArea?.isNotEmpty == true) {
+  //           cityName = placemark.subAdministrativeArea!;
+  //         }
+  //       }
+  //       String address = placemarks.first.street ?? 'آدرس نامشخص';
+  //       return neshan.NeshanCityItem(
+  //         title: cityName,
+  //         address: address,
+  //         location: neshan.Location(x: lon, y: lat),
+  //       );
+  //     }
+  //     return neshan.NeshanCityItem(
+  //       title: 'شهر نامشخص',
+  //       address: 'آدرس نامشخص',
+  //       location: neshan.Location(x: lon, y: lat),
+  //     );
+  //   } catch (e) {
+  //     return neshan.NeshanCityItem(
+  //       title: 'شهر نامشخص',
+  //       address: 'آدرس نامشخص',
+  //       location: neshan.Location(x: lon, y: lat),
+  //     );
+  //   }
+  // }
 
   Future<MeteoCurrentWeatherEntity> callCurrentWeather(String cityName, {double? lat, double? lon}) async {
     try {
