@@ -43,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _suggestionUseCase = locator<GetSuggestionCityUseCase>();
   final DetailCubit _detailCubit = locator<DetailCubit>();
 
-  String _currentCity = 'تهران';
   double _currentLat = 35.6892;
   double _currentLon = 51.3890;
 
@@ -73,6 +72,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchFocus.dispose();
     _homeBloc.close();
     super.dispose();
+  }
+
+  void _showCitySelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('موقعیت شناسایی نشد'),
+        content: const Text('لطفاً نام شهر خود را در باکس جستجو وارد کنید:'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _searchFocus.requestFocus();
+            },
+            child: const Text('جستجوی شهر'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('لغو'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -193,7 +215,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               final lon = model.location?.x;
                               if (lat != null && lon != null) {
                                 setState(() {
-                                  _currentCity = model.title!;
                                   _currentLat = lat;
                                   _currentLon = lon;
                                 });
@@ -254,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 10),
                               Text(
                                 'اینترنت را روشن کنید',
-                                style: const TextStyle(color: Colors.redAccent,fontSize: 30),
+                                style: const TextStyle(color: Colors.redAccent, fontSize: 30),
                               ),
                             ],
                           ),
@@ -264,7 +285,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
                       final temp = city.main?.temp?.round() ?? 0;
-                      final cityName = city.name ?? 'شهر نامشخص';
+                      final cityName = city.name ?? 'نامشخص';
+                      print('اسم شهر نمایش‌داده‌شده توی UI: $cityName'); // لاگ برای دیباگ
 
                       if (!_isForecastLoaded) {
                         final lat = city.coord?.lat ?? _currentLat;
@@ -290,13 +312,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Column(
                         children: [
                           CurrentSection(
-                            currentCity: _currentCity,
-                            cityName: city.name ?? _currentCity,
+                            cityName: cityName,
                             city: city,
                             minTemp: minTemp,
                             temp: temp,
                             maxTemp: maxTemp,
                           ),
+                          if (cityName == 'موقعیت نامشخص')
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: ElevatedButton(
+                                onPressed: _showCitySelectionDialog,
+                                child: const Text('انتخاب دستی شهر'),
+                              ),
+                            ),
                           DetailSection(
                             width: width,
                             detailCubit: _detailCubit,

@@ -22,6 +22,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetForecastWeatherUseCase getForecastWeatherUseCase;
   final GetAirQualityUseCase getAirQualityUseCase;
   final WeatherService weatherService = locator<WeatherService>();
+  final ApiProvider apiProvider = locator<ApiProvider>();
 
   HomeBloc(this.getCurrentWeatherUseCase, this.getForecastWeatherUseCase, this.getAirQualityUseCase)
       : super(HomeState(
@@ -60,6 +61,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       } else {
         dataState = await getCurrentWeatherUseCase({'cityName': event.cityName});
       }
+      print('دیتای آب‌وهوای کنونی دریافت‌شده: $dataState'); // لاگ برای دیباگ
       if (dataState is DataSuccess) {
         final meteoCurrentWeatherModel = dataState.data;
         emit(state.copyWith(newCwStatus: CwCompleted(meteoCurrentWeatherModel), isCityLoading: false));
@@ -67,6 +69,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(newCwStatus: CwError(dataState.error!), isCityLoading: false, errorMessage: dataState.error));
       }
     } catch (e) {
+      print('خطای غیرمنتظره در دریافت آب‌وهوای کنونی: $e');
       emit(state.copyWith(newCwStatus: CwError(e.toString()), isCityLoading: false, errorMessage: e.toString()));
     }
   }
@@ -81,6 +84,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(newFwStatus: FwError(dataState.error!), errorMessage: dataState.error));
       }
     } catch (e) {
+      print('خطای غیرمنتظره در دریافت پیش‌بینی آب‌وهوا: $e');
       emit(state.copyWith(newFwStatus: FwError(e.toString()), errorMessage: e.toString()));
     }
   }
@@ -104,6 +108,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(newAirQualityStatus: AirQualityError(dataState.error!), errorMessage: dataState.error));
       }
     } catch (e) {
+      print('خطای غیرمنتظره در دریافت کیفیت هوا: $e');
       emit(state.copyWith(newAirQualityStatus: AirQualityError(e.toString()), errorMessage: e.toString()));
     }
   }
@@ -150,11 +155,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       String cityName;
       try {
-        final cityItem = await locator<ApiProvider>().getCityByCoordinates(position.latitude, position.longitude);
-        cityName = cityItem?.title ?? 'موقعیت نامشخص';
+        final cityItem = await apiProvider.getCityByCoordinates(position.latitude, position.longitude);
+        cityName = cityItem?.title ?? 'ایزدشهر';
+        print('اسم شهر ارسال‌شده به UI: $cityName');
       } catch (e) {
-        cityName = 'موقعیت نامشخص';
-        throw 'خطا در دریافت نام شهر: $e';
+        cityName = 'ایزدشهر';
+        print('خطا در دریافت نام شهر: $e');
       }
 
       final params = ForecastParams(position.latitude, position.longitude);
@@ -162,6 +168,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       add(LoadFwEvent(params));
       add(LoadAirQualityEvent(params));
     } catch (e) {
+      print('خطا در دریافت موقعیت کنونی: $e');
       add(SetErrorMessage(e.toString()));
       loadDefaultCity();
     } finally {
@@ -171,7 +178,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void loadDefaultCity() {
     final params = ForecastParams(35.6892, 51.3890);
-    add(LoadCwEvent("تهران"));
+    add(LoadCwEvent("تهران", lat: 35.6892, lon: 51.3890));
     add(LoadFwEvent(params));
     add(LoadAirQualityEvent(params));
   }

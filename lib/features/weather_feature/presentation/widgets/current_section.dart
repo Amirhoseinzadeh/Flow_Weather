@@ -1,4 +1,3 @@
-
 import 'package:flow_weather/core/widgets/app_background.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +6,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 class CurrentSection extends StatelessWidget {
   const CurrentSection({
     super.key,
-    required String currentCity,
     required this.cityName,
     required this.city,
     required this.minTemp,
     required this.temp,
     required this.maxTemp,
-  }) : _currentCity = currentCity;
+  });
 
-  final String _currentCity;
   final String cityName;
   final MeteoCurrentWeatherEntity city;
   final double minTemp;
@@ -31,12 +28,9 @@ class CurrentSection extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(5),
       child: Column(
-        children:
-        [
+        children: [
           Text(
-            _currentCity == 'موقعیت نامشخص'
-                ? 'موقعیت نامشخص: $cityName'
-                : cityName,
+            cityName,
             maxLines: 1,
             style: const TextStyle(
               fontFamily: "Titr",
@@ -46,12 +40,7 @@ class CurrentSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            city.weather?.isNotEmpty == true
-                ? city
-                .weather![0]
-                .description ??
-                ''
-                : '',
+            city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
             style: const TextStyle(
               fontFamily: "Titr",
               fontSize: 20,
@@ -62,17 +51,11 @@ class CurrentSection extends StatelessWidget {
             height: 100,
             width: 100,
             child: AppBackground.setIconForMain(
-              city.weather?.isNotEmpty == true
-                  ? city
-                  .weather![0]
-                  .description ??
-                  ''
-                  : '',
+              city.weather?.isNotEmpty == true ? city.weather![0].description ?? '' : '',
             ),
           ),
           Row(
-            mainAxisAlignment:
-            MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Column(
                 children: [
@@ -89,8 +72,7 @@ class CurrentSection extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
-                      fontWeight:
-                      FontWeight.w600,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -118,8 +100,7 @@ class CurrentSection extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
-                      fontWeight:
-                      FontWeight.w600,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

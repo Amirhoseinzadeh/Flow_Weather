@@ -7,12 +7,12 @@ import 'package:flow_weather/features/weather_feature/data/models/meteo_current_
 import 'package:flow_weather/features/weather_feature/data/models/neshan__city_model.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/meteo_murrent_weather_entity.dart';
 import 'package:flow_weather/features/weather_feature/domain/entities/neshan_city_entity.dart' as neshan;
-import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:intl/intl.dart';
 
 class ApiProvider {
   final Dio _dio = Dio();
   final String? apiKeys = Constants.apiKey;
+  final Map<String, String> _cityCache = {};
 
   Future<neshan.NeshanCityEntity> sendRequestCitySuggestion(String prefix) async {
     try {
@@ -43,39 +43,53 @@ class ApiProvider {
           )).toList(),
         );
       }
-      throw Exception('خطا در دریافت داده‌های شهر: وضعیت ');
+      throw Exception('خطا در دریافت داده‌های شهر: وضعیت ${response.statusCode}');
     } catch (e) {
-      throw Exception('خطا در جستجوی شهر: ');
+      throw Exception('خطا در جستجوی شهر: $e');
     }
   }
 
   Future<neshan.NeshanCityItem?> getCityByCoordinates(double lat, double lon) async {
+    final cacheKey = '$lat,$lon';
+    if (_cityCache.containsKey(cacheKey)) {
+      print('استفاده از کش برای مختصات: $cacheKey');
+      return neshan.NeshanCityItem(
+        title: _cityCache[cacheKey]!,
+        address: 'آدرس از کش',
+        location: neshan.Location(x: lon, y: lat),
+      );
+    }
+
     try {
+      if (apiKeys == null || apiKeys!.isEmpty) {
+        throw Exception('API Key نیشان خالی یا ناموجود است!');
+      }
+
       var response = await _dio.get(
         "https://api.neshan.org/v2/reverse",
         queryParameters: {
-          'lat': lat,
-          'lng': lon,
+          'lat': lat.toStringAsFixed(6),
+          'lng': lon.toStringAsFixed(6),
         },
         options: Options(
-          headers: {
-            'Api-Key': apiKeys,
-          },
+          headers: {'Api-Key': apiKeys},
         ),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = response.data;
-        print(response.data);
-        String cityName = _extractCityName(data); // تابع جدید برای استخراج نام شهر
+        String cityName = _extractCityName(data);
+        _cityCache[cacheKey] = cityName;
         return neshan.NeshanCityItem(
           title: cityName,
           address: data['formatted_address'] ?? 'آدرس نامشخص',
           location: neshan.Location(x: lon, y: lat),
         );
+      } else {
+        throw Exception('خطا در درخواست API نیشان: کد وضعیت ${response.statusCode}');
       }
     } catch (e) {
-      print('خطا در دریافت نام شهر: $e');
+      print('خطا در دریافت نام شهر از API نیشان: $e');
       return neshan.NeshanCityItem(
         title: 'موقعیت نامشخص',
         address: 'آدرس نامشخص',
@@ -85,77 +99,24 @@ class ApiProvider {
   }
 
   String _extractCityName(Map<String, dynamic> data) {
-    // بررسی فیلدهای مختلف برای یافتن نام شهر
     if (data.containsKey('city') && data['city'] != null) {
       return data['city'];
-    } else if (data.containsKey('town') && data['town'] != null) {
-      return data['town'];
-    } else if (data.containsKey('village') && data['village'] != null) {
-      return data['village'];
+    } else if (data.containsKey('neighbourhood') && data['neighbourhood'] != null) {
+      return data['neighbourhood'];
     } else if (data.containsKey('formatted_address')) {
-      // تجزیه آدرس برای یافتن نام شهر
-      final addressParts = data['formatted_address'].split(',');
-      if (addressParts.length > 1) {
-        return addressParts[1].trim(); // فرض می‌کنیم نام شهر در بخش دوم است
-      }
+      return data['formatted_address'].split(',').first.trim();
     }
     return 'موقعیت نامشخص';
   }
 
-  // Future<neshan.NeshanCityItem?> _getCityByGeocoding(double lat, double lon) async {
-  //   try {
-  //     List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(lat, lon)
-  //         .timeout(const Duration(seconds: 5), onTimeout: () {
-  //       throw TimeoutException('درخواست geocoding بیش از حد طول کشید');
-  //     });
-  //
-  //     if (placemarks.isNotEmpty) {
-  //       String cityName = 'شهر نامشخص';
-  //       for (var placemark in placemarks.take(3)) {
-  //         if (placemark.locality?.isNotEmpty == true) {
-  //           cityName = placemark.locality!;
-  //           break;
-  //         } else if (placemark.subLocality?.isNotEmpty == true) {
-  //           cityName = placemark.subLocality!;
-  //           break;
-  //         } else if (placemark.subAdministrativeArea?.isNotEmpty == true) {
-  //           cityName = placemark.subAdministrativeArea!;
-  //         }
-  //       }
-  //       String address = placemarks.first.street ?? 'آدرس نامشخص';
-  //       return neshan.NeshanCityItem(
-  //         title: cityName,
-  //         address: address,
-  //         location: neshan.Location(x: lon, y: lat),
-  //       );
-  //     }
-  //     return neshan.NeshanCityItem(
-  //       title: 'شهر نامشخص',
-  //       address: 'آدرس نامشخص',
-  //       location: neshan.Location(x: lon, y: lat),
-  //     );
-  //   } catch (e) {
-  //     return neshan.NeshanCityItem(
-  //       title: 'شهر نامشخص',
-  //       address: 'آدرس نامشخص',
-  //       location: neshan.Location(x: lon, y: lat),
-  //     );
-  //   }
-  // }
-
   Future<MeteoCurrentWeatherEntity> callCurrentWeather(String cityName, {double? lat, double? lon}) async {
     try {
-      final cityData = await sendRequestCitySuggestion(cityName);
-      final city = cityData.items?.firstWhere(
-            (item) => item.location != null,
-        orElse: () => neshan.NeshanCityItem(title: cityName, location: null),
-      );
-      if (city!.location == null && (lat == null || lon == null)) {
+      if (lat == null || lon == null) {
         throw Exception('مختصات برای شهر $cityName نامعتبر است');
       }
 
-      final usedLat = lat ?? city.location!.y;
-      final usedLon = lon ?? city.location!.x;
+      final usedLat = lat;
+      final usedLon = lon;
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
       final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(Duration(days: 1)));
@@ -170,16 +131,15 @@ class ApiProvider {
           'hourly': 'uv_index,precipitation_probability',
           'daily': 'sunrise,sunset',
           'start_date': today,
-          'end_date': tomorrow, // گسترش بازه زمانی به فردا
+          'end_date': tomorrow,
           'timezone': 'Asia/Tehran',
         },
       ).timeout(const Duration(seconds: 10));
 
-
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
-          name: city.title,
+          name: cityName,
           coord: Coord(lat: usedLat, lon: usedLon),
           currentHour: currentHour,
         );
@@ -196,16 +156,18 @@ class ApiProvider {
           precipitationProbability: model.precipitationProbability,
         );
       }
-      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ');
+      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
-      throw Exception('خطا در دریافت آب‌وهوای کنونی: ');
+      throw Exception('خطا در دریافت آب‌وهوای کنونی: $e');
     }
   }
 
   Future<MeteoCurrentWeatherEntity> getCurrentWeatherByCoordinates(double lat, double lon) async {
     try {
       final city = await getCityByCoordinates(lat, lon);
-      final cityName = city?.title ?? 'موقعیت نامشخص';
+      final cityName = city?.title ?? 'ایزدشهر'; // مقدار پیش‌فرض ثابت
+      print('نام شهر دریافت‌شده برای مختصات ($lat, $lon): $cityName');
+
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
       final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(Duration(days: 1)));
@@ -220,11 +182,10 @@ class ApiProvider {
           'hourly': 'uv_index,precipitation_probability',
           'daily': 'sunrise,sunset',
           'start_date': today,
-          'end_date': tomorrow, // گسترش بازه زمانی به فردا
+          'end_date': tomorrow,
           'timezone': 'Asia/Tehran',
         },
       ).timeout(const Duration(seconds: 10));
-
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
@@ -246,9 +207,9 @@ class ApiProvider {
           precipitationProbability: model.precipitationProbability,
         );
       }
-      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ');
+      throw Exception('خطا در دریافت داده‌های آب‌وهوای کنونی: وضعیت ${response.statusCode}');
     } catch (e) {
-      throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: ');
+      throw Exception('خطا در دریافت آب‌وهوای کنونی با مختصات: $e');
     }
   }
 
@@ -275,9 +236,9 @@ class ApiProvider {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       }
-      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا: وضعیت ');
+      throw Exception('خطا در دریافت داده‌های پیش‌بینی آب‌وهوا: وضعیت ${response.statusCode}');
     } catch (e) {
-      throw Exception('خطا در دریافت پیش‌بینی آب‌وهوا: ');
+      throw Exception('خطا در دریافت پیش‌بینی آب‌وهوا: $e');
     }
   }
 
@@ -298,7 +259,7 @@ class ApiProvider {
       ).timeout(const Duration(seconds: 10));
       return AirQualityModel.fromJson(response.data);
     } catch (e) {
-      throw Exception('خطا در دریافت داده‌های کیفیت هوا: ');
+      throw Exception('خطا در دریافت داده‌های کیفیت هوا: $e');
     }
   }
 }
