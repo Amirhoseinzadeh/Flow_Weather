@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 class ApiProvider {
   final Dio _dio = Dio();
   final String? apiKeys = Constants.apiKey;
-  final Map<String, String> _cityCache = {};
 
   Future<neshan.NeshanCityEntity> sendRequestCitySuggestion(String prefix) async {
     try {
@@ -50,46 +49,43 @@ class ApiProvider {
   }
 
   Future<neshan.NeshanCityItem?> getCityByCoordinates(double lat, double lon) async {
-    final cacheKey = '$lat,$lon';
-    if (_cityCache.containsKey(cacheKey)) {
-      print('استفاده از کش برای مختصات: $cacheKey');
-      return neshan.NeshanCityItem(
-        title: _cityCache[cacheKey]!,
-        address: 'آدرس از کش',
-        location: neshan.Location(x: lon, y: lat),
-      );
-    }
-
     try {
+      if (lon < 44.0 || lon > 63.5 || lat < 25.0 || lat > 39.5) {
+        return neshan.NeshanCityItem(
+          title: 'نامشخص (خارج از ایران)',
+          address: 'آدرس نامشخص',
+          location: neshan.Location(x: lon, y: lat),
+        );
+      }
+
       if (apiKeys == null || apiKeys!.isEmpty) {
-        throw Exception('API Key نیشان خالی یا ناموجود است!');
+        throw Exception('API Key نیشان خالیه!');
       }
 
       var response = await _dio.get(
-        "https://api.neshan.org/v2/reverse",
+        "https://api.neshan.org/v1/reverse",
         queryParameters: {
           'lat': lat.toStringAsFixed(6),
           'lng': lon.toStringAsFixed(6),
         },
         options: Options(
           headers: {'Api-Key': apiKeys},
+          validateStatus: (status) => status == 200,
         ),
       ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = response.data;
         String cityName = _extractCityName(data);
-        _cityCache[cacheKey] = cityName;
         return neshan.NeshanCityItem(
           title: cityName,
           address: data['formatted_address'] ?? 'آدرس نامشخص',
           location: neshan.Location(x: lon, y: lat),
         );
       } else {
-        throw Exception('خطا در درخواست API نیشان: کد وضعیت ${response.statusCode}');
+        throw Exception('خطا در API نیشان: کد ${response.statusCode}');
       }
     } catch (e) {
-      print('خطا در دریافت نام شهر از API نیشان: $e');
       return neshan.NeshanCityItem(
         title: 'موقعیت نامشخص',
         address: 'آدرس نامشخص',
@@ -99,14 +95,21 @@ class ApiProvider {
   }
 
   String _extractCityName(Map<String, dynamic> data) {
-    if (data.containsKey('city') && data['city'] != null) {
-      return data['city'];
-    } else if (data.containsKey('neighbourhood') && data['neighbourhood'] != null) {
-      return data['neighbourhood'];
-    } else if (data.containsKey('formatted_address')) {
-      return data['formatted_address'].split(',').first.trim();
+    try {
+      if (data.containsKey('city') && data['city'] is String && (data['city'] as String).isNotEmpty) {
+        return data['city'] as String;
+      } else if (data.containsKey('neighbourhood') && data['neighbourhood'] is String && (data['neighbourhood'] as String).isNotEmpty) {
+        return data['neighbourhood'] as String;
+      } else if (data.containsKey('address') && data['address'] is String && (data['address'] as String).isNotEmpty) {
+        final addressParts = (data['address'] as String).split(',');
+        return addressParts.isNotEmpty ? addressParts.first.trim() : 'موقعیت نامشخص';
+      } else if (data.containsKey('state') && data['state'] is String && (data['state'] as String).isNotEmpty) {
+        return data['state'] as String;
+      }
+      return 'موقعیت نامشخص';
+    } catch (e) {
+      return 'موقعیت نامشخص';
     }
-    return 'موقعیت نامشخص';
   }
 
   Future<MeteoCurrentWeatherEntity> callCurrentWeather(String cityName, {double? lat, double? lon}) async {
@@ -139,13 +142,13 @@ class ApiProvider {
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
-          name: cityName,
+          name: cityName, // تایتل سرچ‌شده رو اینجا اولویت می‌دیم
           coord: Coord(lat: usedLat, lon: usedLon),
           currentHour: currentHour,
         );
 
         return MeteoCurrentWeatherEntity(
-          name: model.name,
+          name: model.name, // تایتل سرچ‌شده حفظ می‌شه
           coord: model.coord,
           sys: model.sys,
           timezone: model.timezone,
@@ -165,8 +168,7 @@ class ApiProvider {
   Future<MeteoCurrentWeatherEntity> getCurrentWeatherByCoordinates(double lat, double lon) async {
     try {
       final city = await getCityByCoordinates(lat, lon);
-      final cityName = city?.title ?? 'ایزدشهر'; // مقدار پیش‌فرض ثابت
-      print('نام شهر دریافت‌شده برای مختصات ($lat, $lon): $cityName');
+      final cityName = city?.title?.isNotEmpty == true ? city!.title! : 'نامشخص';
 
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
@@ -190,7 +192,7 @@ class ApiProvider {
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
-          name: cityName,
+          name: cityName, // تایتل از getCityByCoordinates
           coord: Coord(lat: lat, lon: lon),
           currentHour: currentHour,
         );

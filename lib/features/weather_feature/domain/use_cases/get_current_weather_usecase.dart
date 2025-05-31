@@ -14,7 +14,7 @@ class GetCurrentWeatherUseCase implements UseCase<DataState<MeteoCurrentWeatherE
     final lon = params['lon'] as double?;
 
     if (lat != null && lon != null) {
-      return _weatherRepository.getCurrentWeatherByCoordinates(lat, lon);
+      return _weatherRepository.getCurrentWeatherByCoordinates(lat, lon, cityNameOverride: cityName); // اضافه کردن تایتل سرچ‌شده
     } else {
       return _weatherRepository.fetchCurrentWeatherData(cityName);
     }

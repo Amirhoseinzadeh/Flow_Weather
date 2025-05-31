@@ -8,6 +8,8 @@ class HomeState extends Equatable {
   final bool isCityLoading;
   final String? errorMessage;
   final bool isDetailsExpanded;
+  final String? searchCityName; // اضافه کردن تایتل سرچ
+
 
   const HomeState({
     required this.cwStatus,
@@ -17,6 +19,7 @@ class HomeState extends Equatable {
     required this.isCityLoading,
     this.errorMessage,
     this.isDetailsExpanded = false,
+    this.searchCityName,
   });
 
   HomeState copyWith({
@@ -27,6 +30,7 @@ class HomeState extends Equatable {
     bool? isCityLoading,
     String? errorMessage,
     bool? isDetailsExpanded,
+    String? searchCityName,
   }) {
     return HomeState(
       cwStatus: newCwStatus ?? cwStatus,
@@ -36,9 +40,10 @@ class HomeState extends Equatable {
       isCityLoading: isCityLoading ?? this.isCityLoading,
       errorMessage: errorMessage,
       isDetailsExpanded: isDetailsExpanded ?? this.isDetailsExpanded,
+      searchCityName: searchCityName ?? this.searchCityName,
     );
   }
 
   @override
-  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage, errorMessage, isDetailsExpanded];
+  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage, errorMessage, isDetailsExpanded,searchCityName];
 }

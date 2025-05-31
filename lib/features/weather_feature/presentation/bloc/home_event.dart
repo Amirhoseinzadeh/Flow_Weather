@@ -12,8 +12,9 @@ class LoadCwEvent extends HomeEvent {
   final String cityName;
   final double? lat;
   final double? lon;
+  final bool skipNeshanLookup;
 
-  const LoadCwEvent(this.cityName, {this.lat, this.lon});
+  const LoadCwEvent(this.cityName, {this.lat, this.lon,this.skipNeshanLookup = false});
 
   @override
   List<Object> get props => [cityName, lat ?? 0, lon ?? 0]; // بهینه‌سازی با ?? 0

@@ -24,9 +24,12 @@ class WeatherRepositoryImpl extends WeatherRepository {
   }
 
   @override
-  Future<DataState<MeteoCurrentWeatherEntity>> getCurrentWeatherByCoordinates(double lat, double lon) async {
+  Future<DataState<MeteoCurrentWeatherEntity>> getCurrentWeatherByCoordinates(double lat, double lon, {String? cityNameOverride}) async {
     try {
       MeteoCurrentWeatherEntity currentWeatherEntity = await _apiProvider.getCurrentWeatherByCoordinates(lat, lon);
+      if (cityNameOverride != null) {
+        currentWeatherEntity = currentWeatherEntity.copyWith(name: cityNameOverride);
+      }
       return DataSuccess(currentWeatherEntity);
     } catch (e) {
       return DataFailed("please check your connection...");

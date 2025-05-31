@@ -34,20 +34,21 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
         : [],
   );
 
-  factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {String? name, Coord? coord, String? currentHour}) {
+  factory MeteoCurrentWeatherModel.fromJson(Map<String, dynamic> json, {
+    String? name,
+    Coord? coord,
+    String? currentHour,
+  }) {
     final current = json['current'] ?? {};
     final hourly = json['hourly'] ?? {};
     final daily = json['daily'] ?? {};
     final weatherCode = current['weathercode'] as int? ?? 0;
-
 
     double? uvIndex;
     int? precipitationProbability;
 
     if (currentHour != null && hourly['time'] != null) {
       final times = (hourly['time'] as List<dynamic>?)?.cast<String>() ?? [];
-
-
       DateTime currentDateTime = DateTime.parse(currentHour);
       int closestIndex = -1;
       Duration minDifference = Duration(days: 365);
@@ -62,7 +63,6 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       }
 
       if (closestIndex != -1 && closestIndex < times.length) {
-        // UV Index
         final uvIndexes = (hourly['uv_index'] as List<dynamic>?)?.cast<double>() ?? [];
         if (closestIndex < uvIndexes.length) {
           uvIndex = uvIndexes[closestIndex];
@@ -89,11 +89,10 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
 
     final timezoneStr = json['timezone'] as String? ?? 'UTC';
     final timezoneOffset = _getTimezoneOffset(timezoneStr);
-
     final elevation = json['elevation'] as double?;
 
     return MeteoCurrentWeatherModel(
-      name: name ?? json['city_name'] as String?,
+      name: name ?? 'موقعیت نامشخص',
       coord: coord ?? Coord(
         lat: json['latitude'] as double?,
         lon: json['longitude'] as double?,
@@ -105,7 +104,7 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       windDirection: current['winddirection_10m'] as int?,
       weatherCode: weatherCode,
       description: _mapWeatherCodeToDescription(weatherCode, 'fa'),
-      timezone: timezoneOffset,
+      timezone: timezoneOffset, // حالا سازگار با int?
       sunrise: daily['sunrise']?[0] as String?,
       sunset: daily['sunset']?[0] as String?,
       uvIndex: uvIndex,
@@ -145,7 +144,6 @@ class MeteoCurrentWeatherModel extends MeteoCurrentWeatherEntity {
       96: 'رعد و برق با تگرگ سبک',
       99: 'رعد و برق با تگرگ شدید',
     };
-
     return weatherDescriptions[code] ?? 'ناشناخته';
   }
 

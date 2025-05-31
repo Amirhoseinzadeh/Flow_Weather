@@ -22,10 +22,7 @@ class CurrentSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 6,
-        horizontal: 16,
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       padding: const EdgeInsets.all(5),
       child: Column(
         children: [

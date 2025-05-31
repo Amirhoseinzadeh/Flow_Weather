@@ -43,9 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _suggestionUseCase = locator<GetSuggestionCityUseCase>();
   final DetailCubit _detailCubit = locator<DetailCubit>();
 
-  double _currentLat = 35.6892;
-  double _currentLon = 51.3890;
-
   @override
   void initState() {
     super.initState();
@@ -214,12 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               final lat = model.location?.y;
                               final lon = model.location?.x;
                               if (lat != null && lon != null) {
-                                setState(() {
-                                  _currentLat = lat;
-                                  _currentLon = lon;
-                                });
+                                final cityName = model.title?.isNotEmpty == true ? model.title! : 'نامشخص';
                                 final params = ForecastParams(lat, lon);
-                                context.read<HomeBloc>().add(LoadCwEvent(model.title!, lat: lat, lon: lon));
+                                context.read<HomeBloc>().add(LoadCwEvent(cityName, lat: lat, lon: lon, skipNeshanLookup: true));
                                 context.read<HomeBloc>().add(LoadFwEvent(params));
                                 context.read<HomeBloc>().add(LoadAirQualityEvent(params));
                                 _isForecastLoaded = false;
@@ -241,9 +235,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           buildWhen: (p, c) => p.cwStatus != c.cwStatus,
                           builder: (context, state) {
                             if (state.cwStatus is CwCompleted) {
-                              final name = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.name ?? '';
+                              final name = state.searchCityName ??
+                                  ((state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.name ?? '');
+                              final lat = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.coord?.lat;
+                              final lon = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.coord?.lon;
+                              // لاگ برای دیباگ
+                              print('اسم شهر: $name, مختصات: ($lat, $lon)');
                               _bookmarkBloc.add(FindCityByNameEvent(name));
-                              return BookMarkIcon(name: name);
+                              return BookMarkIcon(name: name, lat: lat, lon: lon);
                             }
                             if (state.cwStatus is CwLoading) {
                               return LoadingAnimationWidget.bouncingBall(
@@ -285,12 +284,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
                       final temp = city.main?.temp?.round() ?? 0;
-                      final cityName = city.name ?? 'نامشخص';
-                      print('اسم شهر نمایش‌داده‌شده توی UI: $cityName'); // لاگ برای دیباگ
+                      final cityName = state.searchCityName ??
+                          (city.name?.isNotEmpty == true ? city.name! : 'نامشخص');
 
                       if (!_isForecastLoaded) {
-                        final lat = city.coord?.lat ?? _currentLat;
-                        final lon = city.coord?.lon ?? _currentLon;
+                        final lat = city.coord?.lat ?? 35.6892;
+                        final lon = city.coord?.lon ?? 51.3890;
                         final params = ForecastParams(lat, lon);
                         _homeBloc.add(LoadFwEvent(params));
                         _homeBloc.add(LoadAirQualityEvent(params));

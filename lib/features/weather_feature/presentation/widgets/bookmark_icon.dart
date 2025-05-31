@@ -8,8 +8,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BookMarkIcon extends StatelessWidget {
   final String name;
+  final double? lat;
+  final double? lon;
 
-  const BookMarkIcon({super.key, required this.name});
+  const BookMarkIcon({
+    super.key,
+    required this.name,
+    this.lat,
+    this.lon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +51,14 @@ class BookMarkIcon extends StatelessWidget {
             if (isBookmarked) {
               context.read<BookmarkBloc>().add(DeleteCityEvent(name));
             } else {
-              context.read<BookmarkBloc>().add(SaveCityEvent(City(name: name)));
+              if (lat == null || lon == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('مختصات شهر در دسترس نیست')),
+                );
+                return;
+              }
+              final city = City(name: name, lat: lat, lon: lon);
+              context.read<BookmarkBloc>().add(SaveCityEvent(city));
             }
             context.read<BookmarkBloc>().add(FindCityByNameEvent(name));
           },
