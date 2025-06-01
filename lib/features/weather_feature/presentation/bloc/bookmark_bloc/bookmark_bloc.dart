@@ -38,10 +38,8 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
         } else {
           emit(state.copyWith(newAllCityStatus: GetAllCityError('خطا در دریافت شهرها')));
         }
-        // بعد از ذخیره، وضعیت بوکمارک رو به‌روزرسانی کن
         add(FindCityByNameEvent(event.city.name));
       } else {
-        print('خطای ذخیره‌سازی: ${result.error}'); // لاگ برای دیباگ
         emit(state.copyWith(newSaveStatus: SaveCityError('خطا در ذخیره شهر: ${result.error}')));
       }
     });
@@ -60,7 +58,6 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
       emit(state.copyWith(newCityStatus: GetCityLoading()));
       final result = await _findCityByNameUseCase(event.name);
       if (result is DataSuccess) {
-        print('نتیجه جستجوی شهر ${event.name}: ${result.data}'); // لاگ برای دیباگ
         emit(state.copyWith(newCityStatus: GetCityCompleted(result.data)));
       } else {
         emit(state.copyWith(newCityStatus: GetCityError('خطا در جستجوی شهر')));

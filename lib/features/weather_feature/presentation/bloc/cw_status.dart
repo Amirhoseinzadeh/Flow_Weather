@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 @immutable
 abstract class CwStatus extends Equatable{}
 
-/// loading state
 class CwLoading extends CwStatus{
 
   @override
@@ -13,7 +12,6 @@ class CwLoading extends CwStatus{
   List<Object?> get props => [];
 }
 
-/// loaded state
 class CwCompleted extends CwStatus{
   final MeteoCurrentWeatherEntity meteoCurrentWeatherEntity;
   CwCompleted(this.meteoCurrentWeatherEntity);
@@ -25,7 +23,7 @@ class CwCompleted extends CwStatus{
   ];
 }
 
-/// error state
+
 class CwError extends CwStatus{
   final String? message;
   CwError(this.message);

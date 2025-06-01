@@ -11,7 +11,7 @@ class BookmarkState extends Equatable {
   final GetCityStatus getCityStatus;
   final DeleteCityStatus deleteCityStatus;
   final UpdateCityStatus updateCityStatus;
-  final int? loadingIndex; // ایندکس شهری که در حال لودینگ هست
+  final int? loadingIndex;
 
   const BookmarkState({
     required this.saveCityStatus,

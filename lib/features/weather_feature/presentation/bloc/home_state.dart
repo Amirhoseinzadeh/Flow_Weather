@@ -8,7 +8,7 @@ class HomeState extends Equatable {
   final bool isCityLoading;
   final String? errorMessage;
   final bool isDetailsExpanded;
-  final String? searchCityName; // اضافه کردن تایتل سرچ
+  final String? searchCityName;
 
 
   const HomeState({

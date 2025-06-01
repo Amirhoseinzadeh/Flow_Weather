@@ -102,13 +102,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return BlocListener<HomeBloc, HomeState>(
       listener: (context, state) {
-        final navigator = Navigator.of(context);
         if ((state.cwStatus is CwCompleted || state.cwStatus is CwError) &&
             !state.isLocationLoading &&
             !state.isCityLoading &&
             _scaffoldKey.currentState?.isDrawerOpen == true) {
-          Future.delayed(const Duration(milliseconds: 200), () {
-            navigator.pop();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scaffoldKey.currentState?.isDrawerOpen == true) {
+              Navigator.of(context).pop();
+            }
           });
         }
         if (state.errorMessage != null) {
@@ -235,20 +236,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           buildWhen: (p, c) => p.cwStatus != c.cwStatus,
                           builder: (context, state) {
                             if (state.cwStatus is CwCompleted) {
-                              final name = state.searchCityName ??
-                                  ((state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.name ?? '');
+                              final name = state.searchCityName ?? 'نامشخص';
                               final lat = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.coord?.lat;
                               final lon = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity.coord?.lon;
-                              // لاگ برای دیباگ
-                              print('اسم شهر: $name, مختصات: ($lat, $lon)');
                               _bookmarkBloc.add(FindCityByNameEvent(name));
-                              return BookMarkIcon(name: name, lat: lat, lon: lon);
+                              return BookMarkIcon(name: name, lat: lat, lon: lon).animate().fadeIn(duration: 300.ms).scale();
                             }
                             if (state.cwStatus is CwLoading) {
                               return LoadingAnimationWidget.bouncingBall(
                                 size: 30,
                                 color: Colors.white,
-                              );
+                              ).animate().fadeIn(duration: 300.ms).scale();
                             }
                             return const SizedBox.shrink();
                           },
@@ -261,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   buildWhen: (p, c) => p.cwStatus != c.cwStatus || p.fwStatus != c.fwStatus || p.aqStatus != c.aqStatus,
                   builder: (context, state) {
                     if (state.isLocationLoading || state.isCityLoading) {
-                      return const SizedBox(height: 200, child: Center(child: DotLoadingWidget()));
+                      return const SizedBox(height: 200, child: Center(child: DotLoadingWidget())).animate().fadeIn(duration: 300.ms).scale();
                     }
                     if (state.cwStatus is CwError) {
                       return SizedBox(
@@ -279,13 +277,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
-                      );
+                      ).animate().fadeIn(duration: 300.ms).scale();
                     }
                     if (state.cwStatus is CwCompleted) {
                       final city = (state.cwStatus as CwCompleted).meteoCurrentWeatherEntity;
                       final temp = city.main?.temp?.round() ?? 0;
-                      final cityName = state.searchCityName ??
-                          (city.name?.isNotEmpty == true ? city.name! : 'نامشخص');
+                      final cityName = state.searchCityName ?? 'نامشخص';
 
                       if (!_isForecastLoaded) {
                         final lat = city.coord?.lat ?? 35.6892;
@@ -316,14 +313,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             minTemp: minTemp,
                             temp: temp,
                             maxTemp: maxTemp,
-                          ),
+                          ).animate().fadeIn(duration: 300.ms).scale(),
                           if (cityName == 'موقعیت نامشخص')
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0),
                               child: ElevatedButton(
                                 onPressed: _showCitySelectionDialog,
                                 child: const Text('انتخاب دستی شهر'),
-                              ),
+                              ).animate().fadeIn(duration: 300.ms).scale(),
+                            ),
+                          if (cityName == 'نامشخص (خارج از ایران)')
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: ElevatedButton(
+                                onPressed: _showCitySelectionDialog,
+                                child: const Text('موقعیت شما خارج از ایران است، شهر را دستی انتخاب کنید'),
+                              ).animate().fadeIn(duration: 300.ms).scale(),
                             ),
                           DetailSection(
                             width: width,
@@ -334,13 +339,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             sunrise: sunrise,
                             sunset: sunset,
                             aqStatus: state.aqStatus,
-                          ),
+                          ).animate().fadeIn(duration: 300.ms).scale(),
                           const SizedBox(height: 6),
                           BlocBuilder<HomeBloc, HomeState>(
                             buildWhen: (p, c) => p.fwStatus != c.fwStatus,
                             builder: (context, s2) {
                               if (s2.fwStatus is FwLoading) {
-                                return const DotLoadingWidget();
+                                return const DotLoadingWidget().animate().fadeIn(duration: 300.ms).scale();
                               }
                               if (s2.fwStatus is FwError) {
                                 return const Center(
@@ -348,14 +353,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     "خطا در بارگذاری پیش‌بینی",
                                     style: TextStyle(fontFamily: "nazanin", color: Colors.red),
                                   ),
-                                );
+                                ).animate().fadeIn(duration: 300.ms).scale();
                               }
                               final forecast = (s2.fwStatus as FwCompleted).forecastEntity;
                               return Column(
                                 children: [
-                                  HourlySection(forecast: forecast),
+                                  HourlySection(forecast: forecast).animate().fadeIn(duration: 300.ms).scale(),
                                   const Divider(color: Colors.white12, thickness: 2),
-                                  DailySection(forecast: forecast, forecastDays: forecast.days),
+                                  DailySection(forecast: forecast, forecastDays: forecast.days).animate().fadeIn(duration: 300.ms).scale(),
                                 ].animate(interval: 300.ms).scale(),
                               );
                             },

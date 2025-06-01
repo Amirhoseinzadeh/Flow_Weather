@@ -5,13 +5,12 @@ import 'package:flow_weather/features/weather_feature/domain/entities/forecast_e
 @immutable
 abstract class FwStatus extends Equatable {}
 
-/// حالت Loading
+
 class FwLoading extends FwStatus {
   @override
   List<Object?> get props => [];
 }
 
-/// حالت Loaded - شامل پیش‌بینی روزانه و ساعتی با ForecastEntity
 class FwCompleted extends FwStatus {
   final ForecastEntity forecastEntity;
 
@@ -21,7 +20,7 @@ class FwCompleted extends FwStatus {
   List<Object?> get props => [forecastEntity];
 }
 
-/// حالت Error
+
 class FwError extends FwStatus {
   final String? message;
 

@@ -52,7 +52,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(newCwStatus: CwLoading(), isCityLoading: true));
     try {
       DataState dataState;
-      String cityName = event.cityName; // اسم ذخیره‌شده یا سرچ‌شده
+      String cityName = event.cityName;
 
       if (event.lat != null && event.lon != null) {
         if (!event.skipNeshanLookup) {
@@ -72,7 +72,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(
           newCwStatus: CwCompleted(dataState.data),
           isCityLoading: false,
-          searchCityName: event.skipNeshanLookup ? cityName : null,
+          searchCityName: cityName,
         ));
       } else {
         emit(state.copyWith(newCwStatus: CwError(dataState.error!), isCityLoading: false));
@@ -140,23 +140,23 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw 'سرویس موقعیت‌یابی غیرفعال است. لطفاً لوکیشن را فعال کنید.';
+        throw 'لطفا لوکیشن خود را روشن کنید';
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw 'مجوز موقعیت‌یابی رد شده است. لطفاً شهر را سرچ کنید.';
-        } else if (permission == LocationPermission.deniedForever) {
-          throw 'مجوز موقعیت‌یابی به‌طور دائم رد شده است. لطفاً از تنظیمات مجوز را فعال کنید.';
+          throw 'شهر مورد نظر را سرچ کنید';
         }
+      } else if (permission == LocationPermission.deniedForever) {
+        throw 'شهر مورد نظر را سرچ کنید';
       }
 
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-      ).timeout(const Duration(seconds: 15), onTimeout: () {
-        throw 'عملیات موقعیت کنونی ناموفق بود. لطفاً شهر خود را سرچ کنید.';
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw 'شهر مورد نظر را سرچ کنید';
       });
 
       String cityName;
