@@ -11,7 +11,7 @@ class WeatherService {
     try {
       return {'latitude': 35.6892, 'longitude': 51.3890};
     } catch (e) {
-      throw Exception('Failed to get coordinates: $e');
+      throw Exception('Failed to get coordinate: $e');
     }
   }
 }
