@@ -155,7 +155,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       Position position = await Geolocator.getCurrentPosition(
       ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw 'شهر مورد نظر را سرچ کنید';
+        throw 'شهر مورد نظر را سرچ کنید ';
       });
 
       String cityName;
