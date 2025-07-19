@@ -140,7 +140,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw 'لطفا لوکیشن خود را روشن کنید';
+        throw 'لطفا لوکیشن خود را روشن کنید ';
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
