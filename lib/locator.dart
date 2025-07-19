@@ -74,7 +74,7 @@ Future<void> setup() async {
     HomeBloc(locator(), locator(), locator()),
   );
   locator.registerSingleton<BookmarkBloc>(
-    BookmarkBloc(locator(), locator(), locator(), locator(), locator()),
+    BookmarkBloc(locator(),locator(), locator(), locator(), locator()),
   );
   locator.registerSingleton<BottomIconCubit>(BottomIconCubit());
   locator.registerSingleton<DetailCubit>(DetailCubit());
