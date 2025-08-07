@@ -132,23 +132,24 @@ class ApiProvider {
           'longitude': usedLon,
           'current': 'temperature_2m,relativehumidity_2m,pressure_msl,weathercode,windspeed_10m,winddirection_10m',
           'hourly': 'uv_index,precipitation_probability',
-          'daily': 'sunrise,sunset',
+          'daily': 'sunrise,sunset,uv_index_max',
           'start_date': today,
           'end_date': tomorrow,
           'timezone': 'Asia/Tehran',
+          'models': 'best_match', // انتخاب بهترین مدل
         },
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
-          name: cityName, // تایتل سرچ‌شده رو اینجا اولویت می‌دیم
+          name: cityName,
           coord: Coord(lat: usedLat, lon: usedLon),
           currentHour: currentHour,
         );
 
         return MeteoCurrentWeatherEntity(
-          name: model.name, // تایتل سرچ‌شده حفظ می‌شه
+          name: model.name,
           coord: model.coord,
           sys: model.sys,
           timezone: model.timezone,
@@ -173,7 +174,7 @@ class ApiProvider {
       final now = DateTime.now();
       final today = DateFormat('yyyy-MM-dd').format(now);
       final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(Duration(days: 1)));
-      final currentHour = DateFormat('yyyy-MM-ddTHH:00').format(now);
+      final currentHour = DateFormat('yyyy-MM-ddTH12:00').format(now); // تنظیم برای اوج UV (ظهر)
 
       var response = await _dio.get(
         "https://api.open-meteo.com/v1/forecast",
@@ -182,17 +183,18 @@ class ApiProvider {
           'longitude': lon,
           'current': 'temperature_2m,relativehumidity_2m,pressure_msl,weathercode,windspeed_10m,winddirection_10m',
           'hourly': 'uv_index,precipitation_probability',
-          'daily': 'sunrise,sunset',
+          'daily': 'sunrise,sunset,uv_index_max',
           'start_date': today,
           'end_date': tomorrow,
           'timezone': 'Asia/Tehran',
+          'models': 'best_match',
         },
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final model = MeteoCurrentWeatherModel.fromJson(
           response.data,
-          name: cityName, // تایتل از getCityByCoordinates
+          name: cityName,
           coord: Coord(lat: lat, lon: lon),
           currentHour: currentHour,
         );
@@ -227,11 +229,12 @@ class ApiProvider {
         queryParameters: {
           'latitude': params.lat,
           'longitude': params.lon,
-          'daily': 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max',
-          'hourly': 'temperature_2m,relative_humidity_2m,weathercode,precipitation_probability,wind_speed_10m',
+          'daily': 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,uv_index_max',
+          'hourly': 'temperature_2m,relative_humidity_2m,weathercode,precipitation_probability,wind_speed_10m,uv_index',
           'start_date': startDate,
           'end_date': endDate,
           'timezone': 'auto',
+          'models': 'best_match', // انتخاب بهترین مدل
         },
       ).timeout(const Duration(seconds: 10));
 

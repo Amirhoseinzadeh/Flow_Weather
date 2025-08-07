@@ -59,9 +59,9 @@ class CurrentSection extends StatelessWidget {
                   const Text(
                     "حداقل دما",
                     style: TextStyle(
-                      fontFamily: "lalezar",
+                      fontFamily: "entezar",
                       color: Colors.white54,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                   Text(
@@ -87,9 +87,9 @@ class CurrentSection extends StatelessWidget {
                   const Text(
                     "حداکثر دما",
                     style: TextStyle(
-                      fontFamily: "lalezar",
+                      fontFamily: "entezar",
                       color: Colors.white54,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                   Text(

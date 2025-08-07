@@ -14,7 +14,7 @@ class LoadCwEvent extends HomeEvent {
   final double? lon;
   final bool skipNeshanLookup;
 
-  const LoadCwEvent(this.cityName, {this.lat, this.lon,this.skipNeshanLookup = false});
+  const LoadCwEvent(this.cityName, {this.lat, this.lon, this.skipNeshanLookup = false});
 
   @override
   List<Object> get props => [cityName, lat ?? 0, lon ?? 0];
@@ -72,11 +72,20 @@ class ClearErrorMessage extends HomeEvent {
   List<Object> get props => [];
 }
 
-class ToggleDetailsExpansion extends HomeEvent {
-  final bool isExpanded;
+class SelectHourEvent extends HomeEvent {
+  final int hourIndex;
 
-  const ToggleDetailsExpansion(this.isExpanded);
+  const SelectHourEvent(this.hourIndex);
 
   @override
-  List<Object> get props => [isExpanded];
+  List<Object> get props => [hourIndex];
+}
+
+class SelectDayEvent extends HomeEvent {
+  final int dayIndex;
+
+  const SelectDayEvent(this.dayIndex);
+
+  @override
+  List<Object> get props => [dayIndex];
 }

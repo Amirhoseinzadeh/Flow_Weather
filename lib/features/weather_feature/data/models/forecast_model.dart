@@ -16,6 +16,27 @@ class ForecastModel extends ForecastEntity {
     final codesD = daily['weathercode'] as List;
     final precipitationSumD = daily['precipitation_sum'] as List;
     final windSpeedMaxD = daily['wind_speed_10m_max'] as List;
+    final uvIndexD = daily['uv_index_max'] as List; // UV Index برای روزها
+
+    // --- نگاشت ساعتی ---
+    final hourly = json['hourly'];
+    final timesH = hourly['time'] as List;
+    final humidityH = hourly['relative_humidity_2m'] as List; // رطوبت ساعتی
+
+    // محاسبه میانگین رطوبت روزانه
+    final dailyHumidity = List<double>.generate(timesD.length, (i) {
+      final dayDate = DateTime.parse(timesD[i] as String);
+      final dayHumidities = humidityH.asMap().entries.where((entry) {
+        final hourDate = DateTime.parse(timesH[entry.key] as String);
+        return hourDate.year == dayDate.year &&
+            hourDate.month == dayDate.month &&
+            hourDate.day == dayDate.day;
+      }).map((entry) => entry.value as num).toList();
+      if (dayHumidities.isNotEmpty) {
+        return dayHumidities.map((h) => h.toDouble()).reduce((a, b) => a + b) / dayHumidities.length;
+      }
+      return 0.0; // پیش‌فرض اگه داده‌ای نبود
+    });
 
     final days = List<ForecastDayEntity>.generate(timesD.length, (i) {
       return ForecastDayEntity(
@@ -25,16 +46,17 @@ class ForecastModel extends ForecastEntity {
         conditionIcon: _mapWeatherCodeToIcon(codesD[i] as int),
         precipitationSum: (precipitationSumD[i] as num).toDouble(),
         windSpeedMax: (windSpeedMaxD[i] as num).toDouble(),
+        uvIndex: (uvIndexD[i] as num).toDouble(),
+        humidity: dailyHumidity[i], // اضافه کردن رطوبت محاسبه‌شده
       );
     });
 
-    final hourly = json['hourly'];
-    final timesH = hourly['time'] as List;
+    // --- نگاشت ساعتی ---
     final tempsH = hourly['temperature_2m'] as List;
     final codesH = hourly['weathercode'] as List;
     final precipitationProbH = hourly['precipitation_probability'] as List;
     final windSpeedH = hourly['wind_speed_10m'] as List;
-    final humidityH = hourly['relative_humidity_2m'] as List;
+    final uvIndexH = hourly['uv_index'] as List;
 
     final dateTimes = timesH.map((t) => DateTime.parse(t as String)).toList();
     final now = DateTime.now();
@@ -54,6 +76,7 @@ class ForecastModel extends ForecastEntity {
         precipitationProbability: (precipitationProbH[idx] as num).toDouble(),
         windSpeed: (windSpeedH[idx] as num).toDouble(),
         humidity: (humidityH[idx] as num).toDouble(),
+        uvIndex: (uvIndexH[idx] as num).toDouble(),
       );
     });
 

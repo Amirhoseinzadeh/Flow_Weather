@@ -53,8 +53,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "سرعت باد",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.yellow,
               ),
             ),
@@ -75,8 +76,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "حداقل دما",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.yellow,
               ),
             ),
@@ -97,8 +99,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "حداکثر دما",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.yellow,
               ),
             ),
@@ -119,8 +122,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "رطوبت",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.yellow,
               ),
             ),
@@ -151,8 +155,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "فشار",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.amberAccent,
               ),
             ),
@@ -176,7 +181,8 @@ class DetailSection extends StatelessWidget {
         if (aqStatus is AirQualityError)
           Text(
             'خطا در بارگذاری کیفیت هوا: ${(aqStatus as AirQualityError).message}',
-            style: const TextStyle(fontFamily: "nikoo", color: Colors.red),
+            style: const TextStyle(fontFamily: "nazanin",fontWeight: FontWeight.bold,
+                color: Colors.red),
           ),
         if (aqStatus is AirQualityCompleted)
           Column(
@@ -185,8 +191,9 @@ class DetailSection extends StatelessWidget {
               const Text(
                 "کیفیت هوا",
                 style: TextStyle(
-                  fontFamily: "nikoo",
+                  fontFamily: "nazanin",
                   fontSize: 18,
+                  fontWeight: FontWeight.bold,
                   color: Colors.amberAccent,
                 ),
               ),
@@ -207,8 +214,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "اشعه UV",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.amberAccent,
               ),
             ),
@@ -239,8 +247,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "طلوع",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.amber,
               ),
             ),
@@ -261,8 +270,9 @@ class DetailSection extends StatelessWidget {
             const Text(
               "غروب",
               style: TextStyle(
-                fontFamily: "nikoo",
+                fontFamily: "nazanin",
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.amber,
               ),
             ),

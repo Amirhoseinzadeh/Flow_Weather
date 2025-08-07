@@ -32,7 +32,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     isLocationLoading: false,
     isCityLoading: false,
     errorMessage: null,
-    isDetailsExpanded: false,
   )) {
     on<LoadCwEvent>(_onLoadCwEvent);
     on<LoadFwEvent>(_onLoadFwEvent);
@@ -41,11 +40,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<SetCityLoading>(_onSetCityLoading);
     on<ClearErrorMessage>(_onClearErrorMessage);
     on<SetErrorMessage>(_onSetErrorMessage);
-    on<ToggleDetailsExpansion>(_onToggleDetailsExpansion);
-  }
-
-  void _onToggleDetailsExpansion(ToggleDetailsExpansion event, Emitter<HomeState> emit) {
-    emit(state.copyWith(isDetailsExpanded: event.isExpanded));
+    on<SelectHourEvent>(_onSelectHourEvent);
+    on<SelectDayEvent>(_onSelectDayEvent);
   }
 
   Future<void> _onLoadCwEvent(LoadCwEvent event, Emitter<HomeState> emit) async {
@@ -133,6 +129,24 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onSetErrorMessage(SetErrorMessage event, Emitter<HomeState> emit) {
     emit(state.copyWith(errorMessage: event.errorMessage));
+  }
+
+  void _onSelectHourEvent(SelectHourEvent event, Emitter<HomeState> emit) {
+    final currentIndex = state.selectedHourIndex;
+    if (currentIndex == event.hourIndex) {
+      emit(state.copyWith(selectedHourIndex: null, selectedDayIndex: null));
+    } else {
+      emit(state.copyWith(selectedHourIndex: event.hourIndex, selectedDayIndex: null));
+    }
+  }
+
+  void _onSelectDayEvent(SelectDayEvent event, Emitter<HomeState> emit) {
+    final currentIndex = state.selectedDayIndex;
+    if (currentIndex == event.dayIndex) {
+      emit(state.copyWith(selectedDayIndex: null, selectedHourIndex: null));
+    } else {
+      emit(state.copyWith(selectedDayIndex: event.dayIndex, selectedHourIndex: null));
+    }
   }
 
   Future<void> getCurrentLocation() async {

@@ -67,7 +67,7 @@ class DetailsExpansionTileState extends State<DetailsExpansionTile> {
         setState(() {
           _isExpanded = isExpanded;
         });
-        context.read<HomeBloc>().add(ToggleDetailsExpansion(isExpanded));
+        // context.read<HomeBloc>().add(ToggleDetailsExpansion(isExpanded));
       },
       children: [
         widget.child,

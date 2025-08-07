@@ -9,7 +9,8 @@ class HomeState extends Equatable {
   final String? errorMessage;
   final bool isDetailsExpanded;
   final String? searchCityName;
-
+  final int? selectedHourIndex;
+  final int? selectedDayIndex;
 
   const HomeState({
     required this.cwStatus,
@@ -20,6 +21,8 @@ class HomeState extends Equatable {
     this.errorMessage,
     this.isDetailsExpanded = false,
     this.searchCityName,
+    this.selectedHourIndex,
+    this.selectedDayIndex,
   });
 
   HomeState copyWith({
@@ -31,6 +34,8 @@ class HomeState extends Equatable {
     String? errorMessage,
     bool? isDetailsExpanded,
     String? searchCityName,
+    int? selectedHourIndex,
+    int? selectedDayIndex,
   }) {
     return HomeState(
       cwStatus: newCwStatus ?? cwStatus,
@@ -41,9 +46,22 @@ class HomeState extends Equatable {
       errorMessage: errorMessage,
       isDetailsExpanded: isDetailsExpanded ?? this.isDetailsExpanded,
       searchCityName: searchCityName ?? this.searchCityName,
+      selectedHourIndex: selectedHourIndex ?? this.selectedHourIndex,
+      selectedDayIndex: selectedDayIndex ?? this.selectedDayIndex,
     );
   }
 
   @override
-  List<Object?> get props => [cwStatus, fwStatus, aqStatus, isLocationLoading, isCityLoading, errorMessage, errorMessage, isDetailsExpanded,searchCityName];
+  List<Object?> get props => [
+    cwStatus,
+    fwStatus,
+    aqStatus,
+    isLocationLoading,
+    isCityLoading,
+    errorMessage,
+    isDetailsExpanded,
+    searchCityName,
+    selectedHourIndex,
+    selectedDayIndex,
+  ];
 }
